@@ -1,0 +1,81 @@
+import { AppConfig } from "@/types";
+
+export const mockData: AppConfig = {
+    profile: {
+        name: "Sarah Jenkins",
+        handle: "@sarah.dev",
+        bio: "Principal Frontend Engineer building high-performance web apps. Creating content about React, Next.js, and Design Systems.",
+        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=b6e3f4",
+        verified: true,
+        location: "San Francisco, CA",
+        isPro: true,
+        customDomains: [
+            {
+                id: "d1",
+                domain: "sarah.dev",
+                profileHandle: "sarah.dev", // The handle this domain maps to
+                status: "verified",
+                verificationMethod: "CNAME",
+                createdAt: "2023-01-01T00:00:00Z",
+            },
+        ],
+        socials: [
+            { platform: "github", href: "https://github.com", label: "GitHub" },
+            { platform: "twitter", href: "https://twitter.com", label: "Twitter" },
+            { platform: "linkedin", href: "https://linkedin.com", label: "LinkedIn" },
+            { platform: "email", href: "mailto:hello@example.com", label: "Email" },
+        ],
+    },
+    links: [
+        {
+            id: "1",
+            title: "Latest Course: Advanced React Patterns",
+            subtitle: "Master composition, hooks, and performance",
+            href: "https://example.com/course",
+            variant: "featured",
+            badge: "NEW",
+            icon: "website",
+            analyticsEventName: "click_course_advanced_react",
+            openInNewTab: true,
+        },
+        {
+            id: "2",
+            title: "My Portfolio Website",
+            subtitle: "Check out my latest case studies",
+            href: "https://example.com/portfolio",
+            variant: "default",
+            icon: "website",
+            analyticsEventName: "click_portfolio",
+            openInNewTab: true,
+        },
+        {
+            id: "3",
+            title: "Subscribe to my Newsletter",
+            subtitle: "Weekly tips on frontend development",
+            href: "https://example.com/newsletter",
+            variant: "default",
+            icon: "email",
+            analyticsEventName: "click_newsletter",
+            openInNewTab: true,
+        },
+        {
+            id: "4",
+            title: "Book a 1:1 Mentorship Session",
+            href: "https://cal.com/",
+            variant: "default",
+            icon: "calendar",
+            analyticsEventName: "click_mentorship",
+            openInNewTab: true,
+        },
+        {
+            id: "5",
+            title: "YouTube Channel",
+            subtitle: "Tutorials and Tech Talks",
+            href: "https://youtube.com",
+            variant: "default",
+            icon: "youtube",
+            analyticsEventName: "click_youtube",
+            openInNewTab: true,
+        },
+    ],
+};
