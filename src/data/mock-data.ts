@@ -20,10 +20,10 @@ export const mockData: AppConfig = {
             },
         ],
         socials: [
-            { platform: "github", href: "https://github.com", label: "GitHub" },
-            { platform: "twitter", href: "https://twitter.com", label: "Twitter" },
-            { platform: "linkedin", href: "https://linkedin.com", label: "LinkedIn" },
-            { platform: "email", href: "mailto:hello@example.com", label: "Email" },
+            { id: "s1", platform: "github", href: "https://github.com", label: "GitHub", visible: true, order: 0 },
+            { id: "s2", platform: "twitter", href: "https://twitter.com", label: "Twitter", visible: true, order: 1 },
+            { id: "s3", platform: "linkedin", href: "https://linkedin.com", label: "LinkedIn", visible: true, order: 2 },
+            { id: "s4", platform: "email", href: "mailto:hello@example.com", label: "Email", visible: true, order: 3 },
         ],
     },
     links: [

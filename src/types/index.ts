@@ -1,6 +1,6 @@
 export type LinkVariant = "featured" | "default";
 export type LinkBadge = "NEW" | "FEATURED" | "LIVE";
-export type SocialPlatform = "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email";
+export type SocialPlatform = "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "website";
 
 export type LinkItem = {
     id: string;
@@ -13,6 +13,7 @@ export type LinkItem = {
     thumbnailUrl?: string;
     analyticsEventName?: string;
     openInNewTab?: boolean;
+    visible?: boolean;
 };
 
 export type CustomDomain = {
@@ -26,9 +27,12 @@ export type CustomDomain = {
 };
 
 export type Social = {
+    id: string;
     platform: SocialPlatform;
     href: string;
     label?: string; // Optional label for accessibility
+    visible?: boolean;
+    order?: number;
 };
 
 export type Profile = {
