@@ -48,8 +48,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     return (
         <div className="w-full flex flex-col items-center animate-in fade-in duration-500">
             <ProfileHeader profile={data.profile} />
-            <SocialRow socials={data.profile.socials || []} />
-            <LinkList links={data.links} />
+            <SocialRow socials={data.profile.socials || []} visible={data.profile.sectionVisibility?.socials} />
+            <LinkList links={data.links} visible={data.profile.sectionVisibility?.links} />
 
             {/* Debug Info for Custom Domain Verification */}
             {/* In production, remove this or hide behind a flag */}

@@ -35,6 +35,12 @@ export type Social = {
     order?: number;
 };
 
+export type SectionVisibility = {
+    profile: boolean;
+    socials: boolean;
+    links: boolean;
+};
+
 export type Profile = {
     name: string;
     handle: string;
@@ -45,6 +51,7 @@ export type Profile = {
     socials?: Social[];
     isPro?: boolean;
     customDomains?: CustomDomain[];
+    sectionVisibility?: SectionVisibility;
 };
 
 export type AppConfig = {

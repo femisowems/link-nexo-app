@@ -19,20 +19,26 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { useState } from "react";
-import { Edit2, Check, Sparkles } from "lucide-react";
+import { Edit2, Check, Sparkles, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/lib/utils";
 
 interface LinkListProps {
     links: LinkItem[];
+    visible?: boolean;
 }
 
-export function LinkList({ links: initialLinks }: LinkListProps) {
+export function LinkList({ links: initialLinks, visible = true }: LinkListProps) {
     const [links, setLinks] = useState(initialLinks);
     const [isEditable, setIsEditable] = useState(false); // Demo toggle for editor mode
+    // Initialize section visibility from props
+    const [isSectionVisible, setIsSectionVisible] = useState(visible);
 
     const [newLinkId, setNewLinkId] = useState<string | null>(null); // Added newLinkId state
     const { showToast } = useToast();
+
+    // ... (sensors and handlers remain the same) ...
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -81,7 +87,6 @@ export function LinkList({ links: initialLinks }: LinkListProps) {
         });
     };
 
-    // Added handleAddLink function
     const handleAddLink = () => {
         const oldLinks = [...links];
         const id = crypto.randomUUID();
@@ -114,15 +119,67 @@ export function LinkList({ links: initialLinks }: LinkListProps) {
         });
     };
 
+    const handleToggleSectionVisibility = () => {
+        setIsSectionVisible(!isSectionVisible);
+        showToast(isSectionVisible ? "Links section hidden" : "Links section visible", {
+            onUndo: () => setIsSectionVisible(isSectionVisible)
+        });
+    };
+
     // Filter links for display
     const displayedLinks = isEditable
         ? links
         : links.filter(link => link.visible !== false);
 
+
+    // Logic:
+    // If section hidden and NOT editing -> Render nothing (but keep "Builder" empty state concept? No, section is hidden)
+    // If section hidden and editing -> Render dimmed
+
+    if (!isSectionVisible && !isEditable) {
+        // Render minimal editor entry point
+        return (
+            <div className="w-full max-w-lg mx-auto flex justify-end mb-4">
+                <button
+                    onClick={() => setIsEditable(true)}
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted opacity-0 hover:opacity-100"
+                >
+                    <Edit2 className="w-3.5 h-3.5" /> Edit Links
+                </button>
+            </div>
+        );
+    }
+
+    // Normal Empty State Logic Check
+    // If section is visible, but no links? We handle that inside.
+
     return (
-        <div className="w-full max-w-lg mx-auto">
+        <div className={cn(
+            "w-full max-w-lg mx-auto transition-opacity duration-300",
+            !isSectionVisible && "opacity-50 grayscale"
+        )}>
             {/* Editor Toggle - In a real app this would be a separate Admin View vs Public View */}
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4 gap-2">
+                {isEditable && (
+                    <button
+                        onClick={handleToggleSectionVisibility}
+                        className={cn(
+                            "flex items-center gap-2 text-xs font-medium transition-colors px-3 py-1.5 rounded-full",
+                            !isSectionVisible ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                        )}
+                        title={!isSectionVisible ? "Show Section" : "Hide Section"}
+                    >
+                        {!isSectionVisible ? (
+                            <>
+                                <EyeOff className="w-3.5 h-3.5" /> Hidden
+                            </>
+                        ) : (
+                            <>
+                                <Eye className="w-3.5 h-3.5" /> Visible
+                            </>
+                        )}
+                    </button>
+                )}
                 <button
                     onClick={() => setIsEditable(!isEditable)}
                     className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted"

@@ -19,6 +19,11 @@ export const mockData: AppConfig = {
                 createdAt: "2023-01-01T00:00:00Z",
             },
         ],
+        sectionVisibility: {
+            profile: true,
+            socials: true,
+            links: true,
+        },
         socials: [
             { id: "s1", platform: "github", href: "https://github.com", label: "GitHub", visible: true, order: 0 },
             { id: "s2", platform: "twitter", href: "https://twitter.com", label: "Twitter", visible: true, order: 1 },

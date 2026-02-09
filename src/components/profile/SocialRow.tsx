@@ -1,8 +1,9 @@
 "use client";
 
 import { Social } from "@/types";
-import { Edit2, Check, Plus, Sparkles } from "lucide-react";
+import { Edit2, Check, Plus, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import {
     DndContext,
     closestCenter,
@@ -25,12 +26,16 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface SocialRowProps {
     socials: Social[];
+    visible?: boolean;
 }
 
-export function SocialRow({ socials: initialSocials }: SocialRowProps) {
+export function SocialRow({ socials: initialSocials, visible = true }: SocialRowProps) {
     const [socials, setSocials] = useState(initialSocials || []);
     const [isEditable, setIsEditable] = useState(false);
+    const [isSectionVisible, setIsSectionVisible] = useState(visible);
     const { showToast } = useToast();
+
+    // ... (sensors and handlers remain the same) ...
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -108,18 +113,54 @@ export function SocialRow({ socials: initialSocials }: SocialRowProps) {
         });
     };
 
+    const handleToggleSectionVisibility = () => {
+        setIsSectionVisible(!isSectionVisible);
+        showToast(isSectionVisible ? "Socials section hidden" : "Socials section visible", {
+            onUndo: () => setIsSectionVisible(isSectionVisible)
+        });
+    };
+
     // Filter for public view
     const displayedSocials = isEditable
         ? socials
         : socials.filter(s => s.visible !== false);
 
-    // If no socials and not editable, show nothing
+    // Logic:
+    // If section hidden and NOT editing -> Render nothing
+    // If section hidden and editing -> Render dimmed
+    if (!isSectionVisible && !isEditable) {
+        // Even if hidden, we need a way to enter edit mode in this 'Editor App' context.
+        // However, if the section is hidden, we assume the parent/admin controls would handle re-enabling it.
+        // BUT, following the ProfileHeader pattern, we should probably render the "Edit" button container if we are the owner.
+        // Let's return null for the content but keep the wrapper??
+        // Actually, if we return null, the "Edit" button is gone.
+        // We need to render the "Edit Socials" button even if hidden?
+        // YES.
+        return (
+            <div className="w-full flex justify-center mt-6 mb-8">
+                <button
+                    onClick={() => setIsEditable(true)}
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-1.5 rounded-full hover:bg-muted/50 opacity-0 hover:opacity-100"
+                    title="Show Social Controls"
+                >
+                    <Edit2 className="w-3 h-3" /> Edit Socials
+                </button>
+            </div>
+        );
+    }
+
+    // If no socials and not editable, show nothing (unless section is visible and empty? No, existing logic was return null)
+    // We should keep the existing logic for empty state + public view -> return null.
     if (!isEditable && (!displayedSocials || displayedSocials.length === 0)) return null;
 
+
     return (
-        <div className="w-full flex flex-col items-center mt-6 mb-8 gap-4 relative z-20">
+        <div className={cn(
+            "w-full flex flex-col items-center mt-6 mb-8 gap-4 relative z-20 transition-opacity duration-300",
+            !isSectionVisible && "opacity-50 grayscale"
+        )}>
             {/* Edit Toggle */}
-            <div className="bg-muted/30 rounded-full p-1 self-center mb-2">
+            <div className="bg-muted/30 rounded-full p-1 self-center mb-2 flex items-center gap-1">
                 <button
                     onClick={() => setIsEditable(!isEditable)}
                     className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-1.5 rounded-full hover:bg-background/80"
@@ -134,6 +175,18 @@ export function SocialRow({ socials: initialSocials }: SocialRowProps) {
                         </>
                     )}
                 </button>
+                {isEditable && (
+                    <button
+                        onClick={handleToggleSectionVisibility}
+                        className={cn(
+                            "flex items-center justify-center p-1.5 rounded-full transition-colors w-8 h-8",
+                            !isSectionVisible ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                        )}
+                        title={!isSectionVisible ? "Show Section" : "Hide Section"}
+                    >
+                        {!isSectionVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    </button>
+                )}
             </div>
 
             <DndContext
