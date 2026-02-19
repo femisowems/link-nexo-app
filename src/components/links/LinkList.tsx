@@ -121,6 +121,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
 
             <nav aria-label="Main Navigation">
                 <DndContext
+                    id="link-list-dnd"
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}

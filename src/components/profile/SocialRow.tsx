@@ -187,6 +187,7 @@ export function SocialRow({ socials: initialSocials, visible = true, editable = 
                 </div>
             )}
             <DndContext
+                id="social-row-dnd"
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
