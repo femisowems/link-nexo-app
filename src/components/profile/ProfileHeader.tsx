@@ -105,10 +105,10 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="relative mt-8"
             >
-                <div className="rounded-full overflow-hidden border-4 border-background shadow-lg w-24 h-24 sm:w-28 sm:h-28">
+                <div className="rounded-full overflow-hidden border-4 border-background shadow-lg w-24 h-24 sm:w-28 sm:h-28 relative bg-muted">
                     <Image
-                        src={profile.avatarUrl}
-                        alt={name}
+                        src={profile.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${profile.handle}`}
+                        alt={name || "Profile"}
                         fill
                         className="object-cover"
                         priority

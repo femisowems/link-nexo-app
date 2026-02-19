@@ -1,64 +1,120 @@
+
+import { db } from "@/db";
+import { profiles, links } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { mockData } from "@/data/mock-data";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
 import { Footer } from "@/components/layout/Footer";
+import { LinkItem } from "@/types";
+import type { Metadata } from "next";
 
-// In a real app, this would be an async database call
-async function getProfileData(handle: string) {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
+// Force dynamic rendering as data comes from DB
+export const dynamic = "force-dynamic";
 
-    // For demo purposes, we return the same mock data for any handle
-    // In reality, check if handle matches
-    if (!handle) return null;
-
-    // We can customize the name based on the handle for the demo
-    const data = { ...mockData };
-    if (handle !== "demo" && handle !== data.profile.handle.replace("@", "")) {
-        // Just to show dynamic capabilities, we could potentially return 404
-        // or just render the default mock data as requested.
-        // Let's keep it simple and return the mock data for any valid-looking handle.
-    }
-
-    return data;
+interface Props {
+    params: Promise<{
+        handle: string;
+    }>;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
-    const { handle } = await params;
-    const data = await getProfileData(handle);
+async function getProfile(handle: string) {
+    const profile = await db.query.profiles.findFirst({
+        where: eq(profiles.handle, handle),
+        with: {
+            user: true,
+            links: {
+                orderBy: (links, { desc }) => [desc(links.order)],
+            },
+            socials: {
+                orderBy: (socials, { asc }) => [asc(socials.order)],
+            }
+        }
+    });
 
-    if (!data) return {};
+    if (!profile) return null;
+
+    // Note: we fetch links above via relation now!
+    const userLinks = profile.links;
+
+    // Filter visible links for public view and transform types
+    const visibleLinks: LinkItem[] = userLinks
+        .filter((l) => l.visible)
+        .map(l => ({
+            id: l.id,
+            title: l.title,
+            href: l.href,
+            visible: l.visible ?? true,
+            icon: l.icon as any, // Cast or validate
+            order: l.order ?? 0,
+            profileId: l.profileId
+        }));
 
     return {
-        title: `${data.profile.name} (@${handle}) | Link-Nexo`,
-        description: data.profile.bio,
+        ...profile,
+        name: profile.user.name || profile.handle, // Map user name
+        bio: profile.bio || "",
+        location: profile.location || "",
+        avatarUrl: profile.avatarUrl || "",
+        verified: profile.verified ?? false,
+        // safe parse sectionVisibility
+        sectionVisibility: typeof profile.sectionVisibility === 'string' ? JSON.parse(profile.sectionVisibility) : profile.sectionVisibility,
+        links: visibleLinks,
+        socials: profile.socials.map(s => ({
+            ...s,
+            // Cast platform to correct type or validate
+            platform: s.platform as any,
+            label: s.label || undefined,
+            visible: s.visible ?? true,
+            order: s.order ?? 0
+        }))
     };
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
-    const { handle } = await params;
-    const data = await getProfileData(handle);
 
-    if (!data) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { handle } = await params;
+    const profile = await getProfile(handle);
+
+    if (!profile) {
+        return {
+            title: "Profile Not Found",
+        };
+    }
+
+    return {
+        title: `${profile.handle} | Link-Nexo`,
+        description: profile.bio || `Check out ${profile.handle}'s links on Link-Nexo`,
+        openGraph: {
+            images: [profile.avatarUrl || ""],
+        }
+    };
+}
+
+export default async function ProfilePage({ params }: Props) {
+    const { handle } = await params;
+
+    if (["login", "admin", "api"].includes(handle)) {
+        return notFound();
+    }
+
+    const profile = await getProfile(handle);
+
+    if (!profile) {
         notFound();
     }
 
     return (
-        <div className="w-full flex flex-col items-center animate-in fade-in duration-500">
-            <ProfileHeader profile={data.profile} />
-            <SocialRow socials={data.profile.socials || []} visible={data.profile.sectionVisibility?.socials} />
-            <LinkList links={data.links} visible={data.profile.sectionVisibility?.links} />
-
-            {/* Debug Info for Custom Domain Verification */}
-            {/* In production, remove this or hide behind a flag */}
-            <div className="mt-8 p-4 text-xs text-muted-foreground bg-muted/30 rounded-lg max-w-md text-center">
-                <p>Debug: Served via {handle}</p>
+        <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
+            <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+                <ProfileHeader profile={profile} />
+                <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} />
+                <LinkList links={profile.links} visible={profile.sectionVisibility?.links} />
             </div>
-
-            <div className="flex-grow min-h-[50px]" /> {/* Spacer */}
-            <Footer />
-        </div>
+            <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
+                Powered by Link-Nexo
+            </div>
+        </main>
     );
 }
