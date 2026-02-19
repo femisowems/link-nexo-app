@@ -129,9 +129,9 @@ export default async function AdminPage() {
                 <button className="text-xs border px-2 py-1 rounded">Share</button>
             </div>
 
-            <ProfileHeader profile={formattedProfile} />
-            <SocialRow socials={formattedProfile.socials} visible={formattedProfile.sectionVisibility?.socials} />
-            <LinkList links={formattedLinks} visible={true} />
+            <ProfileHeader profile={formattedProfile} editable={true} />
+            <SocialRow socials={formattedProfile.socials} visible={formattedProfile.sectionVisibility?.socials} editable={true} />
+            <LinkList links={formattedLinks} visible={true} editable={true} />
         </div>
     );
 }

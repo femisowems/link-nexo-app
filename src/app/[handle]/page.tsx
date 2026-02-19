@@ -108,9 +108,9 @@ export default async function ProfilePage({ params }: Props) {
     return (
         <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
             <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
-                <ProfileHeader profile={profile} />
-                <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} />
-                <LinkList links={profile.links} visible={profile.sectionVisibility?.links} />
+                <ProfileHeader profile={profile} editable={false} />
+                <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
+                <LinkList links={profile.links} visible={profile.sectionVisibility?.links} editable={false} />
             </div>
             <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
                 Powered by Link-Nexo

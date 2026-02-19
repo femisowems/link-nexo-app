@@ -11,11 +11,15 @@ import { cn } from "@/lib/utils";
 
 interface ProfileHeaderProps {
     profile: Profile;
+    editable?: boolean;
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps) {
     const [isVisible, setIsVisible] = useState(profile.sectionVisibility?.profile ?? true);
-    const [isEditable, setIsEditable] = useState(false);
+    const [isEditable, setIsEditable] = useState(false); // Local edit mode toggle, governed by prop
+
+    // If not editable, force isEditable to false
+    // actually, we just won't show the button to toggle it.
 
     // Restore profile state
     const [name, setName] = useState(profile.name);
@@ -50,6 +54,8 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
 
     // If hidden and not editing, don't render anything
     if (!isVisible && !isEditable) {
+        if (!editable) return null;
+
         return (
             <div className="w-full flex justify-center mb-4">
                 {/* Hidden state controller - allows you to enter edit mode */}
@@ -70,34 +76,36 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
             !isVisible && "opacity-50 grayscale"
         )}>
             {/* Edit Controls */}
-            <div className="absolute top-0 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                    onClick={() => setIsEditable(!isEditable)}
-                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-1.5 rounded-full bg-muted/30 hover:bg-muted/80 backdrop-blur-sm"
-                >
-                    {isEditable ? (
-                        <>
-                            <Check className="w-3 h-3" /> Done
-                        </>
-                    ) : (
-                        <>
-                            <Edit2 className="w-3 h-3" /> Edit Profile
-                        </>
-                    )}
-                </button>
-                {isEditable && (
+            {editable && (
+                <div className="absolute top-0 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                        onClick={handleToggleVisibility}
-                        className={cn(
-                            "flex items-center gap-2 text-xs font-medium transition-all px-3 py-1.5 rounded-full backdrop-blur-sm",
-                            !isVisible ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
-                        )}
-                        title={!isVisible ? "Show Section" : "Hide Section"}
+                        onClick={() => setIsEditable(!isEditable)}
+                        className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all px-3 py-1.5 rounded-full bg-muted/30 hover:bg-muted/80 backdrop-blur-sm"
                     >
-                        {!isVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        {isEditable ? (
+                            <>
+                                <Check className="w-3 h-3" /> Done
+                            </>
+                        ) : (
+                            <>
+                                <Edit2 className="w-3 h-3" /> Edit Profile
+                            </>
+                        )}
                     </button>
-                )}
-            </div>
+                    {isEditable && (
+                        <button
+                            onClick={handleToggleVisibility}
+                            className={cn(
+                                "flex items-center gap-2 text-xs font-medium transition-all px-3 py-1.5 rounded-full backdrop-blur-sm",
+                                !isVisible ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                            )}
+                            title={!isVisible ? "Show Section" : "Hide Section"}
+                        >
+                            {!isVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        </button>
+                    )}
+                </div>
+            )}
 
             <motion.div
                 initial={{ scale: 0.5, opacity: 0 }}

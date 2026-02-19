@@ -28,10 +28,11 @@ import { addLink, deleteLink, reorderLinks, updateLink } from "@/app/actions";
 interface LinkListProps {
     links: LinkItem[];
     visible?: boolean;
+    editable?: boolean;
 }
 
-export function LinkList({ links: initialLinks, visible = true }: LinkListProps) {
-    const [isEditable, setIsEditable] = useState(true); // Default to editable in Admin
+export function LinkList({ links: initialLinks, visible = true, editable = false }: LinkListProps) {
+    const [isEditable, setIsEditable] = useState(editable); // Default to prop value
     const [isSectionVisible, setIsSectionVisible] = useState(visible);
     const { showToast } = useToast();
     const [isPending, startTransition] = useTransition();
