@@ -76,7 +76,13 @@ export default function Home() {
                                     <div className="w-32 h-6 bg-slate-900 rounded-full"></div>
                                 </div>
                                 <div className="p-8 pt-16 flex flex-col gap-4 items-center h-full relative z-10">
-                                    <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-full mb-4 shadow-lg border-4 border-white flex justify-center items-center text-white text-3xl font-bold">LN</div>
+                                    <motion.div
+                                        animate={{ y: [0, -5, 0] }}
+                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                        className="w-24 h-24 rounded-full mb-4 shadow-lg border-4 border-white overflow-hidden bg-white"
+                                    >
+                                        <img src="/avatar.png" alt="Avatar" className="w-full h-full object-cover" />
+                                    </motion.div>
                                     <div className="w-48 h-6 bg-slate-200 rounded-full mb-8"></div>
                                     {[1, 2, 3, 4].map(i => (
                                         <div key={i} className="w-full h-14 bg-white shadow-sm border border-slate-100 rounded-xl max-w-[85%] mx-auto hover:scale-105 transition-transform flex items-center px-4">
@@ -285,8 +291,8 @@ export default function Home() {
                                 <div className="absolute w-64 h-64 border border-violet-200 rounded-full animate-[spin_20s_linear_infinite]" />
                                 <div className="absolute w-48 h-48 border border-dashed border-violet-300 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
 
-                                <div className="w-24 h-24 bg-white rounded-2xl shadow-xl flex items-center justify-center border-2 border-violet-500 z-10 relative">
-                                    <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">LN</span>
+                                <div className="w-24 h-24 bg-white rounded-2xl shadow-xl flex items-center justify-center border-2 border-violet-500 z-10 relative overflow-hidden">
+                                    <img src="/avatar.png" alt="Avatar" className="w-full h-full object-cover" />
                                     <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="absolute -top-12 w-10 h-10 bg-[#1DA1F2] rounded-full shadow-lg flex items-center justify-center text-white"><Globe2 size={16} /></motion.div>
                                     <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} className="absolute -bottom-12 -left-10 w-10 h-10 bg-[#E1306C] rounded-full shadow-lg flex items-center justify-center text-white"><Smartphone size={16} /></motion.div>
                                     <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} className="absolute -bottom-12 -right-10 w-10 h-10 bg-[#FF0000] rounded-full shadow-lg flex items-center justify-center text-white"><LinkIcon size={16} /></motion.div>
