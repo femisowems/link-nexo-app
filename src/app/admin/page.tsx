@@ -118,7 +118,7 @@ export default async function AdminPage() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="max-w-md mx-auto p-4 space-y-8 min-h-screen">
             <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg">
                 <div>
                     <h2 className="font-semibold">Your Link:</h2>

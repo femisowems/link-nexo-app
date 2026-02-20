@@ -34,7 +34,7 @@ export default function RootLayout({
         )}
       >
         <ToastProvider>
-          <main className="mx-auto max-w-md min-h-screen flex flex-col items-center p-4">
+          <main className="min-h-screen flex flex-col">
             {children}
           </main>
         </ToastProvider>
