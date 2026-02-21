@@ -19,6 +19,7 @@ export default async function AdminLayout({
                     <nav className="ml-4 border-l pl-4 hidden md:flex gap-4">
                         <a href="/admin" className="text-sm font-medium hover:text-primary">Dashboard</a>
                         <a href="/admin/profiles" className="text-sm font-medium hover:text-primary">My Profiles</a>
+                        <a href="/admin/settings" className="text-sm font-medium hover:text-primary">Settings</a>
                     </nav>
                 </div>
                 <div className="flex gap-4 items-center">
