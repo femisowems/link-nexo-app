@@ -2,23 +2,6 @@ import { AppConfig } from "@/types";
 
 export const mockData: AppConfig = {
     profile: {
-        name: "Sarah Jenkins",
-        handle: "@sarah.dev",
-        bio: "Principal Frontend Engineer building high-performance web apps. Creating content about React, Next.js, and Design Systems.",
-        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=b6e3f4",
-        verified: true,
-        location: "San Francisco, CA",
-        isPro: true,
-        customDomains: [
-            {
-                id: "d1",
-                domain: "sarah.dev",
-                profileHandle: "sarah.dev", // The handle this domain maps to
-                status: "verified",
-                verificationMethod: "CNAME",
-                createdAt: "2023-01-01T00:00:00Z",
-            },
-        ],
         sectionVisibility: {
             profile: true,
             socials: true,

@@ -32,16 +32,39 @@ export async function createProfile(formData: FormData): Promise<{ success?: boo
         sectionVisibility: JSON.stringify({ profile: true, socials: true, links: true }),
     }).returning();
 
-    // Seed one placeholder link so the profile isn't empty
-    await db.insert(links).values({
-        profileId: newProfile.id,
-        title: "My Website",
-        subtitle: "A description of my website",
-        href: "https://example.com",
-        visible: true,
-        order: 0,
-        icon: "website",
-    });
+    // Insert Mock Links
+    if (mockData.links && mockData.links.length > 0) {
+        await Promise.all(mockData.links.map((link, index) =>
+            db.insert(links).values({
+                profileId: newProfile.id,
+                title: link.title,
+                subtitle: link.subtitle,
+                href: link.href,
+                icon: link.icon || "website",
+                variant: link.variant || "default",
+                badge: link.badge,
+                thumbnailUrl: link.thumbnailUrl,
+                analyticsEventName: link.analyticsEventName,
+                openInNewTab: link.openInNewTab ?? true,
+                visible: true,
+                order: index,
+            })
+        ));
+    }
+
+    // Insert Mock Socials
+    if (mockData.profile?.socials && mockData.profile.socials.length > 0) {
+        await Promise.all(mockData.profile.socials.map((social, index) =>
+            db.insert(socials).values({
+                profileId: newProfile.id,
+                platform: social.platform,
+                href: social.href,
+                label: social.label,
+                visible: true,
+                order: index,
+            })
+        ));
+    }
 
     revalidatePath("/admin/profiles");
     return { success: true, profileId: newProfile.id };

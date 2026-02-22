@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { createProfile, deleteProfile } from "@/app/actions";
 import Link from "next/link";
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,7 +27,14 @@ interface ProfileCardData {
 // ─── Create Profile Modal ──────────────────────────────────────────────────────
 
 function CreateProfileModal({ onClose }: { onClose: () => void }) {
-    const [handle, setHandle] = useState("");
+    // Generate a default random handle
+    const defaultHandle = uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        separator: '',
+        style: 'lowerCase'
+    });
+
+    const [handle, setHandle] = useState(defaultHandle);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();

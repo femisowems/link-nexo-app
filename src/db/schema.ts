@@ -94,6 +94,11 @@ export const links = pgTable("link", {
     subtitle: text("subtitle"),
     href: text("href").notNull(),
     icon: text("icon"),
+    variant: text("variant").default("default"),
+    badge: text("badge"),
+    thumbnailUrl: text("thumbnailUrl"),
+    analyticsEventName: text("analyticsEventName"),
+    openInNewTab: boolean("openInNewTab").default(true),
     visible: boolean("visible").default(true),
     order: integer("order").default(0),
 });

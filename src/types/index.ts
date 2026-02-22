@@ -55,6 +55,6 @@ export type Profile = {
 };
 
 export type AppConfig = {
-    profile: Profile;
+    profile: Partial<Profile>;
     links: LinkItem[];
 };

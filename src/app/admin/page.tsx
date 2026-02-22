@@ -10,6 +10,8 @@ import { LinkList } from "@/components/links/LinkList";
 import { redirect } from "next/navigation";
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
+import { AlertCircle, UserPlus, AtSign, ArrowRight } from "lucide-react";
+
 // Form to create profile if missing
 function CreateProfile({ userId }: { userId: string }) {
     const randomName = uniqueNamesGenerator({
@@ -21,76 +23,119 @@ function CreateProfile({ userId }: { userId: string }) {
     const defaultHandle = randomName;
 
     return (
-        <div className="text-center py-20">
-            <h2 className="text-2xl font-bold mb-4">Complete your profile</h2>
-            <form action={async (formData) => {
-                "use server";
-                let handle = formData.get("handle") as string;
-                if (!handle) return;
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+            <div className="w-full max-w-md bg-card/50 backdrop-blur-xl border border-border/50 shadow-2xl rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+                {/* Decorative background gradients */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-                // Check uniqueness and retry until unique if handle is taken
-                let isUnique = false;
-                while (!isUnique) {
-                    const existingProfile = await db.query.profiles.findFirst({
-                        where: eq(profiles.handle, handle)
-                    });
+                <div className="flex flex-col items-center text-center mb-8 relative z-10">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-primary/20">
+                        <UserPlus className="w-8 h-8 text-primary" />
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Welcome to Link-Nexo</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px]">
+                        Let's get started by claiming your unique profile handle.
+                    </p>
+                </div>
 
-                    if (existingProfile) {
-                        // Generate a new random handle if the current one is taken
-                        handle = uniqueNamesGenerator({
-                            dictionaries: [adjectives, animals],
-                            separator: '',
-                            style: 'lowerCase'
+                <form action={async (formData) => {
+                    "use server";
+                    let handle = formData.get("handle") as string;
+                    if (!handle) return;
+
+                    // Clean the handle
+                    handle = handle.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+
+                    // Check uniqueness and retry until unique if handle is taken
+                    let isUnique = false;
+                    while (!isUnique) {
+                        const existingProfile = await db.query.profiles.findFirst({
+                            where: eq(profiles.handle, handle)
                         });
-                    } else {
-                        isUnique = true;
+
+                        if (existingProfile) {
+                            handle = uniqueNamesGenerator({
+                                dictionaries: [adjectives, animals],
+                                separator: '',
+                                style: 'lowerCase'
+                            });
+                        } else {
+                            isUnique = true;
+                        }
                     }
+
+                    // Create Profile
+                    const [newProfile] = await db.insert(profiles).values({
+                        userId,
+                        handle,
+                        bio: "Welcome to my new profile!",
+                        location: "Everywhere, World",
+                        avatarUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${handle}`,
+                        sectionVisibility: JSON.stringify({ profile: true, socials: true, links: true }),
+                    }).returning();
+
+                    // Insert Mock Links and Socials (omitted from UI code for brevity, kept functional)
+                    if (mockData.links && mockData.links.length > 0) {
+                        await Promise.all(mockData.links.map((link, index) =>
+                            db.insert(links).values({
+                                profileId: newProfile.id, title: link.title, subtitle: link.subtitle, href: link.href, icon: link.icon || "website", variant: link.variant || "default", badge: link.badge, thumbnailUrl: link.thumbnailUrl, analyticsEventName: link.analyticsEventName, openInNewTab: link.openInNewTab ?? true, visible: true, order: index,
+                            })
+                        ));
+                    }
+                    if (mockData.profile.socials && mockData.profile.socials.length > 0) {
+                        await Promise.all(mockData.profile.socials.map((social, index) =>
+                            db.insert(socials).values({
+                                profileId: newProfile.id, platform: social.platform, href: social.href, label: social.label, visible: true, order: index,
+                            })
+                        ));
+                    }
+
+                    redirect("/admin");
+                }} className="flex flex-col gap-6 relative z-10">
+                    <div className="flex flex-col gap-2 relative">
+                        <label htmlFor="handle" className="text-sm font-medium text-foreground/80 pl-1">Choose your handle</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                                <AtSign className="w-5 h-5" />
+                            </div>
+                            <input
+                                id="handle"
+                                name="handle"
+                                defaultValue={defaultHandle}
+                                placeholder="e.g. johndoe"
+                                className="w-full pl-11 pr-4 py-3.5 bg-background border border-border/60 hover:border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base placeholder:text-muted-foreground/50"
+                                required
+                                pattern="[a-zA-Z0-9_-]+"
+                                title="Letters, numbers, underscores, and hyphens only"
+                            />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground px-1 mt-1 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            link-nexo.com/<span className="text-foreground font-semibold">handle</span>
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="group relative w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary overflow-hidden"
+                    >
+                        <span className="relative z-10 flex items-center gap-2">
+                            Create My Profile <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                        <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                    </button>
+                </form>
+            </div>
+
+            {/* Very simple shimmer animation for global css if needed, otherwise generic transition works */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @keyframes shimmer {
+                    100% { transform: translateX(100%); }
                 }
-
-                // Create Profile
-                const [newProfile] = await db.insert(profiles).values({
-                    userId,
-                    handle,
-                    bio: "Welcome to my new profile!",
-                    location: "Everywhere, World",
-                    avatarUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${handle}`,
-                    sectionVisibility: JSON.stringify({ profile: true, socials: true, links: true }),
-                }).returning();
-
-                // Insert Mock Links
-                if (mockData.links && mockData.links.length > 0) {
-                    await Promise.all(mockData.links.map((link, index) =>
-                        db.insert(links).values({
-                            profileId: newProfile.id,
-                            title: link.title,
-                            subtitle: link.subtitle,
-                            href: link.href,
-                            icon: link.icon || "website",
-                            visible: true,
-                            order: index,
-                        })
-                    ));
-                }
-
-                // Insert Mock Socials
-                if (mockData.profile.socials && mockData.profile.socials.length > 0) {
-                    await Promise.all(mockData.profile.socials.map((social, index) =>
-                        db.insert(socials).values({
-                            profileId: newProfile.id,
-                            platform: social.platform,
-                            href: social.href,
-                            label: social.label,
-                            visible: true,
-                            order: index,
-                        })
-                    ));
-                }
-
-                redirect("/admin");
-            }} className="flex flex-col gap-4 max-w-xs mx-auto">
-                <input name="handle" defaultValue={defaultHandle} placeholder="Choose a handle (e.g. johndoe)" className="border p-2 rounded" required />
-                <button type="submit" className="bg-primary text-primary-foreground p-2 rounded">Create Profile</button>
-            </form>
+            `}} />
         </div>
     );
 }
@@ -119,10 +164,11 @@ export default async function AdminPage() {
         return <CreateProfile userId={session.user.id} />;
     }
 
-    const formattedLinks: any[] = profile.links.map(l => ({
+    const formattedLinks = profile.links.map(l => ({
         ...l,
+        subtitle: l.subtitle || undefined,
         visible: l.visible ?? true,
-        icon: (l.icon as any) || undefined, // Transform null to undefined or default
+        icon: (l.icon as "website" | "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "calendar" | "custom") || undefined, // Transform null to undefined or default
         order: l.order ?? 0
     }));
 
@@ -138,7 +184,7 @@ export default async function AdminPage() {
         socials: profile.socials.map(s => ({
             ...s,
             // Cast platform to correct type or validate
-            platform: s.platform as any,
+            platform: s.platform as "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "website",
             label: s.label || undefined,
             visible: s.visible ?? true,
             order: s.order ?? 0
