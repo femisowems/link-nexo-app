@@ -91,6 +91,7 @@ export const links = pgTable("link", {
         .notNull()
         .references(() => profiles.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    subtitle: text("subtitle"),
     href: text("href").notNull(),
     icon: text("icon"),
     visible: boolean("visible").default(true),

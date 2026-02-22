@@ -66,6 +66,7 @@ export const mockData: AppConfig = {
         {
             id: "4",
             title: "Book a 1:1 Mentorship Session",
+            subtitle: "Let's discuss your career and code together",
             href: "https://cal.com/",
             variant: "default",
             icon: "calendar",

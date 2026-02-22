@@ -3,12 +3,61 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { links, profiles, users } from "@/db/schema";
+import { links, profiles, users, socials } from "@/db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { mockData } from "@/data/mock-data";
 
 // --- Profile Actions ---
+
+export async function createProfile(formData: FormData): Promise<{ success?: boolean; error?: string; profileId?: string }> {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized." };
+
+    const handle = (formData.get("handle") as string ?? "").trim().toLowerCase();
+    if (!handle || handle.length < 3) return { error: "Handle must be at least 3 characters." };
+    if (!/^[a-z0-9_-]+$/.test(handle)) return { error: "Handle can only contain letters, numbers, hyphens, or underscores." };
+
+    // Uniqueness check
+    const existing = await db.query.profiles.findFirst({ where: eq(profiles.handle, handle) });
+    if (existing) return { error: `@${handle} is already taken.` };
+
+    const [newProfile] = await db.insert(profiles).values({
+        userId: session.user.id,
+        handle,
+        bio: "",
+        location: "",
+        avatarUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${handle}`,
+        sectionVisibility: JSON.stringify({ profile: true, socials: true, links: true }),
+    }).returning();
+
+    // Seed one placeholder link so the profile isn't empty
+    await db.insert(links).values({
+        profileId: newProfile.id,
+        title: "My Website",
+        subtitle: "A description of my website",
+        href: "https://example.com",
+        visible: true,
+        order: 0,
+        icon: "website",
+    });
+
+    revalidatePath("/admin/profiles");
+    return { success: true, profileId: newProfile.id };
+}
+
+export async function deleteProfile(profileId: string): Promise<{ success?: boolean; error?: string }> {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized." };
+
+    const profile = await db.query.profiles.findFirst({ where: eq(profiles.id, profileId) });
+    if (!profile || profile.userId !== session.user.id) return { error: "Profile not found or unauthorized." };
+
+    await db.delete(profiles).where(eq(profiles.id, profileId));
+    revalidatePath("/admin/profiles");
+    return { success: true };
+}
 
 const UpdateProfileSchema = z.object({
     name: z.string().min(1).optional(),
@@ -78,6 +127,7 @@ export async function addLink() {
     const newLink = await db.insert(links).values({
         profileId: profile.id,
         title: "New Link",
+        subtitle: "",
         href: "https://example.com",
         visible: true,
         order: newOrder,

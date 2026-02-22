@@ -8,18 +8,45 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
 import { redirect } from "next/navigation";
+import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 // Form to create profile if missing
 function CreateProfile({ userId }: { userId: string }) {
+    const randomName = uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        separator: '',
+        style: 'lowerCase'
+    });
+    // Remove the number
+    const defaultHandle = randomName;
+
     return (
         <div className="text-center py-20">
             <h2 className="text-2xl font-bold mb-4">Complete your profile</h2>
             <form action={async (formData) => {
                 "use server";
-                const handle = formData.get("handle") as string;
+                let handle = formData.get("handle") as string;
                 if (!handle) return;
 
-                // TODO: Check uniqueness
+                // Check uniqueness and retry until unique if handle is taken
+                let isUnique = false;
+                while (!isUnique) {
+                    const existingProfile = await db.query.profiles.findFirst({
+                        where: eq(profiles.handle, handle)
+                    });
+
+                    if (existingProfile) {
+                        // Generate a new random handle if the current one is taken
+                        handle = uniqueNamesGenerator({
+                            dictionaries: [adjectives, animals],
+                            separator: '',
+                            style: 'lowerCase'
+                        });
+                    } else {
+                        isUnique = true;
+                    }
+                }
+
                 // Create Profile
                 const [newProfile] = await db.insert(profiles).values({
                     userId,
@@ -36,6 +63,7 @@ function CreateProfile({ userId }: { userId: string }) {
                         db.insert(links).values({
                             profileId: newProfile.id,
                             title: link.title,
+                            subtitle: link.subtitle,
                             href: link.href,
                             icon: link.icon || "website",
                             visible: true,
@@ -60,7 +88,7 @@ function CreateProfile({ userId }: { userId: string }) {
 
                 redirect("/admin");
             }} className="flex flex-col gap-4 max-w-xs mx-auto">
-                <input name="handle" placeholder="Choose a handle (e.g. johndoe)" className="border p-2 rounded" required />
+                <input name="handle" defaultValue={defaultHandle} placeholder="Choose a handle (e.g. johndoe)" className="border p-2 rounded" required />
                 <button type="submit" className="bg-primary text-primary-foreground p-2 rounded">Create Profile</button>
             </form>
         </div>
