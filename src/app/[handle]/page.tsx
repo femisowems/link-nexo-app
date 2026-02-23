@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { profiles, links } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { parseLocation } from "@/lib/utils";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
@@ -60,7 +61,7 @@ async function getProfile(handle: string) {
         ...profile,
         name: profile.user.name || profile.handle, // Map user name
         bio: profile.bio || "",
-        location: profile.location || "",
+        location: parseLocation(profile.location),
         avatarUrl: profile.avatarUrl || "",
         verified: profile.verified ?? false,
         // safe parse sectionVisibility

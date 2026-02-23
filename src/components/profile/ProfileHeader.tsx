@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Profile } from "@/types";
 import { CheckCircle2, MapPin, Eye, EyeOff, Edit2, Check } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { InlineEdit } from "@/components/ui/InlineEdit";
@@ -18,19 +19,25 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
     const [isVisible, setIsVisible] = useState(profile.sectionVisibility?.profile ?? true);
     const [isEditable, setIsEditable] = useState(false); // Local edit mode toggle, governed by prop
 
-    // If not editable, force isEditable to false
-    // actually, we just won't show the button to toggle it.
-
     // Restore profile state
     const [name, setName] = useState(profile.name);
     const [bio, setBio] = useState(profile.bio);
-    const [location, setLocation] = useState(profile.location || "");
+
+    // Track Location parts
+    const isStructured = typeof profile.location === 'object';
+    const initialCity = isStructured ? (profile.location as any).city : "";
+    const initialCountry = isStructured ? (profile.location as any).country : (profile.location === "Everywhere, World" ? "WORLD" : "");
+    const initialDisplay = isStructured ? (profile.location as any).display : (profile.location || "");
+
+    const [city, setCity] = useState(initialCity);
+    const [country, setCountry] = useState(initialCountry);
+    const [displayLocation, setDisplayLocation] = useState<string>(initialDisplay);
 
     const { showToast } = useToast();
 
     // Mock save handler
     const handleSave = async (field: string, value: string, setter: (val: string) => void) => {
-        const previousValue = field === "name" ? name : field === "bio" ? bio : location;
+        const previousValue = field === "name" ? name : field === "bio" ? bio : displayLocation;
 
         // Simulate network request
         await new Promise(resolve => setTimeout(resolve, 600));
@@ -39,10 +46,31 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
         showToast("Saved", {
             onUndo: () => {
                 setter(previousValue);
-                // In a real app, you'd also revert backend state here
+                if (field === "location") {
+                    setCity(initialCity);
+                    setCountry(initialCountry);
+                }
             }
         });
-        console.log(`Saved ${field}:`, value);
+    };
+
+    const handleLocationChange = (newCity: string, newCountry: string) => {
+        setCity(newCity);
+        setCountry(newCountry);
+
+        let finalLocationString = "";
+        let newDisplay = "";
+        if (newCountry === "WORLD") {
+            finalLocationString = "Everywhere, World";
+            newDisplay = "Everywhere, World";
+        } else if (newCity || newCountry) {
+            const countryName = COUNTRIES.find(c => c.code === newCountry)?.name || "";
+            newDisplay = [newCity, countryName].filter(Boolean).join(", ");
+            finalLocationString = JSON.stringify({ city: newCity, country: newCountry, display: newDisplay });
+        }
+
+        // Firing the save handler to run the toast and update mock state
+        handleSave("location", newDisplay, setDisplayLocation);
     };
 
     const handleToggleVisibility = () => {
@@ -174,15 +202,28 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                 <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground pt-1 w-full max-w-xs">
                     <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                     {isEditable ? (
-                        <InlineEdit
-                            value={location}
-                            onSave={(val) => handleSave("location", val, setLocation)}
-                            className="min-w-[100px]"
-                            inputClassName="text-center text-xs"
-                            label="Location"
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={city}
+                                onBlur={(e) => handleLocationChange(e.target.value, country)}
+                                onChange={(e) => setCity(e.target.value)}
+                                placeholder="City"
+                                className="w-[100px] sm:w-[120px] bg-transparent hover:bg-muted/50 focus:bg-background border border-transparent focus:border-border rounded-md px-2 py-1 text-center text-xs outline-none transition-all placeholder:text-muted-foreground/50"
+                            />
+                            <select
+                                value={country}
+                                onChange={(e) => handleLocationChange(city, e.target.value)}
+                                className="w-[120px] sm:w-[140px] bg-transparent hover:bg-muted/50 focus:bg-background border border-transparent focus:border-border rounded-md px-2 py-1 text-xs outline-none transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="" disabled>Country</option>
+                                {COUNTRIES.map(c => (
+                                    <option key={c.code} value={c.code}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     ) : (
-                        <span>{location}</span>
+                        <span>{displayLocation}</span>
                     )}
                 </div>
             </motion.div>

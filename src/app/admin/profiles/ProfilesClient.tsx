@@ -10,6 +10,7 @@ import {
 import { createProfile, deleteProfile } from "@/app/actions";
 import Link from "next/link";
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+import { parseLocation } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -266,7 +267,9 @@ function ProfileCard({ profile, onDeleteClick }: { profile: ProfileCardData; onD
                 </div>
 
                 {profile.location && (
-                    <p className="text-muted-foreground text-xs">📍 {profile.location}</p>
+                    <p className="text-muted-foreground text-xs">
+                        📍 {typeof parseLocation(profile.location) === 'string' ? parseLocation(profile.location) as string : (parseLocation(profile.location) as any).display}
+                    </p>
                 )}
             </div>
 

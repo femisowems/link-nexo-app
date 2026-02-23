@@ -9,6 +9,7 @@ import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
 import { redirect } from "next/navigation";
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
+import { parseLocation } from "@/lib/utils";
 
 import { AlertCircle, UserPlus, AtSign, ArrowRight } from "lucide-react";
 
@@ -182,7 +183,7 @@ export default async function AdminPage() {
         ...profile,
         name: profile.user.name || profile.handle,
         bio: profile.bio || "",
-        location: profile.location || "",
+        location: parseLocation(profile.location),
         avatarUrl: profile.avatarUrl || "",
         verified: profile.verified ?? false,
         sectionVisibility: typeof profile.sectionVisibility === 'string' ? JSON.parse(profile.sectionVisibility) : profile.sectionVisibility,

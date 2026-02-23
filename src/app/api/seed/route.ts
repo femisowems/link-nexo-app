@@ -40,7 +40,7 @@ export async function GET() {
             await db.update(profiles).set({
                 userId: userId,
                 bio: mockData.profile.bio,
-                location: mockData.profile.location,
+                location: typeof mockData.profile.location === 'string' ? mockData.profile.location : JSON.stringify(mockData.profile.location),
                 avatarUrl: mockData.profile.avatarUrl,
                 verified: mockData.profile.verified,
                 sectionVisibility: JSON.stringify(mockData.profile.sectionVisibility),
@@ -81,7 +81,7 @@ export async function GET() {
                 userId: userId,
                 handle: "sarah.dev",
                 bio: mockData.profile.bio,
-                location: mockData.profile.location,
+                location: typeof mockData.profile.location === 'string' ? mockData.profile.location : JSON.stringify(mockData.profile.location),
                 avatarUrl: mockData.profile.avatarUrl,
                 verified: mockData.profile.verified,
                 sectionVisibility: JSON.stringify(mockData.profile.sectionVisibility),

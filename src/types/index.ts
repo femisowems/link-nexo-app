@@ -41,13 +41,19 @@ export type SectionVisibility = {
     links: boolean;
 };
 
+export type LocationData = {
+    city: string;
+    country: string;
+    display: string;
+};
+
 export type Profile = {
     name: string;
     handle: string;
     bio: string;
     avatarUrl: string;
     verified?: boolean;
-    location?: string;
+    location?: LocationData | string;
     socials?: Social[];
     isPro?: boolean;
     customDomains?: CustomDomain[];
