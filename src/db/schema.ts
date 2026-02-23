@@ -81,6 +81,7 @@ export const profiles = pgTable("profile", {
     avatarUrl: text("avatarUrl"),
     verified: boolean("verified").default(false),
     sectionVisibility: text("sectionVisibility"), // JSON string or handle as jsonb if using neon serverless driver which supports it
+    preferences: text("preferences"), // JSON string for UI settings (theme, colors, fonts, links)
 });
 
 export const links = pgTable("link", {

@@ -9,7 +9,7 @@ import { AppearanceSection } from "@/components/settings/sections/AppearanceSect
 import { LinkBehaviorSection } from "@/components/settings/sections/LinkBehaviorSection";
 import { AccessibilitySection } from "@/components/settings/sections/AccessibilitySection";
 import { DataPrivacySection } from "@/components/settings/sections/DataPrivacySection";
-import { useSettingsStore } from "@/hooks/useSettingsStore";
+import { useSettingsStore, Settings } from "@/hooks/useSettingsStore";
 import { useToast } from "@/components/ui/Toast";
 
 type TabId = "appearance" | "links" | "accessibility" | "privacy";
@@ -21,11 +21,11 @@ const TABS: SettingsTab[] = [
     { id: "privacy", label: "Data & Privacy", icon: Shield },
 ];
 
-export function AppearanceSettingsClient() {
+export function AppearanceSettingsClient({ initialPreferences }: { initialPreferences?: Partial<Settings> }) {
     const [activeTab, setActiveTab] = useState<TabId>("appearance");
     const { showToast } = useToast();
     const { settings, hasUnsavedChanges, updateSetting, resetSettings, exportSettings } =
-        useSettingsStore((msg, opts) => showToast(msg, opts));
+        useSettingsStore((msg, opts) => showToast(msg, opts), initialPreferences);
 
     const tabs = TABS.map((t) => ({
         ...t,

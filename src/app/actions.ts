@@ -126,6 +126,26 @@ export async function updateProfile(formData: { [key: string]: string }) {
     return { success: true };
 }
 
+export async function updatePreferences(preferences: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+    const profile = await db.query.profiles.findFirst({
+        where: eq(profiles.userId, userId),
+    });
+
+    if (!profile) throw new Error("Profile not found");
+
+    await db.update(profiles)
+        .set({ preferences })
+        .where(eq(profiles.userId, userId));
+
+    revalidatePath("/admin");
+    revalidatePath(`/${profile.handle}`); // Revalidate public page
+    return { success: true };
+}
+
 // --- Link Actions ---
 
 export async function addLink() {

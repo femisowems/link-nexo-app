@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { updatePreferences } from "@/app/actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,11 +35,11 @@ export interface Settings {
     largerText: boolean;
 }
 
-const DEFAULT_SETTINGS: Settings = {
-    displayName: "Sarah Jenkins",
-    bio: "Principal Frontend Engineer building high-performance web apps. Creating content about React, Next.js, and Design Systems.",
-    location: "San Francisco, CA",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=b6e3f4",
+export const DEFAULT_SETTINGS: Settings = {
+    displayName: "User",
+    bio: "",
+    location: "Everywhere",
+    avatarUrl: "",
     verifiedBadge: false,
 
     theme: "system",
@@ -69,39 +70,60 @@ export interface UseSettingsStore {
 }
 
 export function useSettingsStore(
-    onToast?: (msg: string, options?: { onUndo?: () => void }) => void
+    onToast?: (msg: string, options?: { onUndo?: () => void }) => void,
+    initialSettings?: Partial<Settings>
 ): UseSettingsStore {
-    const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+    // We start with database initialSettings if provided, else fallback to defaults.
+    // LocalStorage will override this on mount if `loadSettings` finds it, but we can prioritize server initialSettings.
+    const startingSettings = { ...DEFAULT_SETTINGS, ...initialSettings };
+    const [settings, setSettings] = useState<Settings>(startingSettings);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const debounceRef = useRef<NodeJS.Timeout | null>(null);
-    const prevSettings = useRef<Settings>(DEFAULT_SETTINGS);
+    const prevSettings = useRef<Settings>(startingSettings);
 
-    // Load from localStorage on mount
+    // Load from localStorage on mount, but allow server prop `initialSettings` to take precedence if present
     const loadSettings = useCallback(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
+            let parsed = { ...DEFAULT_SETTINGS };
+
             if (stored) {
-                const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } as Settings;
-                setSettings(parsed);
-                prevSettings.current = parsed;
-                applyRootClasses(parsed);
+                parsed = { ...parsed, ...JSON.parse(stored) };
             }
+
+            // Always let server-provided initial settings override local cache
+            if (initialSettings) {
+                parsed = { ...parsed, ...initialSettings };
+            }
+
+            setSettings(parsed);
+            prevSettings.current = parsed;
+            applyRootClasses(parsed);
         } catch {
             // Silently fall back to defaults if storage is corrupt
+            if (initialSettings) {
+                const parsed = { ...DEFAULT_SETTINGS, ...initialSettings };
+                setSettings(parsed);
+                applyRootClasses(parsed);
+            }
         }
-    }, []);
+    }, [initialSettings]);
 
-    useEffect(() => {
-        loadSettings();
-    }, [loadSettings]);
+    // Make sure we apply classes on initial mount to avoid flickering if possible, or wait for effect
+    // But since this is a client component, `applyRootClasses` is safe here.
 
-    // Persist settings to localStorage
-    const persistSettings = useCallback((next: Settings) => {
+    // Persist settings to localStorage AND Database via Server Action
+    const persistSettings = useCallback(async (next: Settings) => {
         try {
+            // 1. Save to local storage for instant read on browser refresh
             localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+
+            // 2. Save to database for public profile visibility
+            await updatePreferences(JSON.stringify(next));
+
             setHasUnsavedChanges(false);
         } catch {
-            // Ignore storage errors (private browsing, quota exceeded)
+            // Ignore storage errors (private browsing, quota exceeded, network error)
         }
     }, []);
 

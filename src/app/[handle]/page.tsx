@@ -60,6 +60,7 @@ async function getProfile(handle: string) {
         verified: profile.verified ?? false,
         // safe parse sectionVisibility
         sectionVisibility: typeof profile.sectionVisibility === 'string' ? JSON.parse(profile.sectionVisibility) : profile.sectionVisibility,
+        preferences: profile.preferences ? JSON.parse(profile.preferences) : undefined,
         links: visibleLinks,
         socials: profile.socials.map(s => ({
             ...s,
@@ -84,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     return {
-        title: `${profile.handle} | Link-Nexo`,
+        title: `${profile.name || profile.handle} | Link-Nexo`,
         description: profile.bio || `Check out ${profile.handle}'s links on Link-Nexo`,
         openGraph: {
             images: [profile.avatarUrl || ""],
@@ -105,16 +106,31 @@ export default async function ProfilePage({ params }: Props) {
         notFound();
     }
 
+    const { preferences } = profile;
+
+    // Define public HTML root equivalent wrapper styles based on preferences
+    const isDark = preferences?.theme === "dark" || (preferences?.theme === "system" /* assume light fallback for SSR without client match-media, or default to dark? We'll let CSS handle base, and force dark if explicit */);
+    const themeClass = preferences?.theme === "dark" ? "dark" : preferences?.theme === "light" ? "light" : "";
+    const motionClass = preferences?.reduceMotion ? "reduce-motion" : "";
+    const contrastClass = preferences?.highContrastMode ? "high-contrast" : "";
+    const textClass = preferences?.largerText ? "larger-text" : "";
+
     return (
-        <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
-            <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
-                <ProfileHeader profile={profile} editable={false} />
-                <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
-                <LinkList links={profile.links} visible={profile.sectionVisibility?.links} editable={false} />
-            </div>
-            <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
-                Powered by Link-Nexo
-            </div>
-        </main>
+        <div
+            className={`min-h-screen ${themeClass} ${motionClass} ${contrastClass} ${textClass}`}
+            data-accent={preferences?.accentColor || "blue"}
+            data-link-style={preferences?.linkStyle || "rounded"}
+        >
+            <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
+                <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+                    <ProfileHeader profile={profile} editable={false} />
+                    <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
+                    <LinkList links={profile.links} visible={profile.sectionVisibility?.links} editable={false} />
+                </div>
+                <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
+                    Powered by Link-Nexo
+                </div>
+            </main>
+        </div>
     );
 }
