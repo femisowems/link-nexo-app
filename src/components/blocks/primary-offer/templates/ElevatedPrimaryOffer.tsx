@@ -1,60 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LucideIcon, ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PrimaryOfferCardProps, accentStyles } from "../types";
 
-export type PrimaryOfferCardProps = {
-    title: string;
-    description?: string;
-    href: string;
-    icon?: LucideIcon;
-    ctaLabel?: string;
-    price?: string;
-    originalPrice?: string;
-    rating?: string;
-    thumbnailUrl?: string;
-    badge?: string;
-    layout?: string;
-    accent: string;
-    reduceMotion?: boolean;
-};
-
-// We keep accent styles strictly for the button and image fallback to maintain cohesiveness with settings.
-const accentStyles: Record<string, { cta: string; focus: string; fallbackBg: string }> = {
-    blue: {
-        cta: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20",
-        focus: "focus-visible:ring-blue-500",
-        fallbackBg: "bg-blue-600 text-white",
-    },
-    violet: {
-        cta: "bg-violet-600 hover:bg-violet-700 text-white shadow-violet-500/20",
-        focus: "focus-visible:ring-violet-500",
-        fallbackBg: "bg-violet-600 text-white",
-    },
-    rose: {
-        cta: "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20",
-        focus: "focus-visible:ring-rose-500",
-        fallbackBg: "bg-rose-600 text-white",
-    },
-    amber: {
-        cta: "bg-amber-500 hover:bg-amber-600 text-amber-950 shadow-amber-500/20",
-        focus: "focus-visible:ring-amber-500",
-        fallbackBg: "bg-amber-500 text-amber-950",
-    },
-    emerald: {
-        cta: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20",
-        focus: "focus-visible:ring-emerald-500",
-        fallbackBg: "bg-emerald-600 text-white",
-    },
-    slate: {
-        cta: "bg-slate-800 hover:bg-slate-900 dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-white shadow-slate-500/20",
-        focus: "focus-visible:ring-slate-500",
-        fallbackBg: "bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900",
-    },
-};
-
-export function PrimaryOfferCard({
+export function ElevatedPrimaryOffer({
     title,
     description,
     href,

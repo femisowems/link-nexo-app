@@ -3,7 +3,7 @@
 import { LinkItem, LinkBadge } from "@/types";
 import { SortableLink } from "./SortableLink";
 import { LinkCard } from "./LinkCard";
-import { PrimaryOfferCard } from "@/components/blocks/PrimaryOfferCard";
+import { PrimaryOfferRenderer } from "@/components/blocks/primary-offer/PrimaryOfferRenderer";
 import { Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, LucideIcon } from "lucide-react";
 import {
     DndContext,
@@ -155,7 +155,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                         </div>
                     ) : (
                         <div className="w-full relative group">
-                            <PrimaryOfferCard
+                            <PrimaryOfferRenderer
                                 title={primary.title}
                                 description={primary.subtitle}
                                 href={primary.href}
@@ -166,6 +166,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                                 rating={primary.rating}
                                 thumbnailUrl={primary.thumbnailUrl}
                                 layout={primary.layout}
+                                template={primary.template as any}
                                 badge={primary.badge === "NEW" || primary.badge === "FEATURED" || primary.badge === "LIVE" ? primary.badge : primary.badge}
                                 accent={primary.accent || accent}
                             />

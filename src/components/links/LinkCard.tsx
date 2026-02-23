@@ -38,6 +38,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
     const [href, setHref] = useState(link.href);
     const [variant, setVariant] = useState<string>(link.variant || "default");
     const [layout, setLayout] = useState<string>(link.layout || "full");
+    const [template, setTemplate] = useState<string>(link.template || "elevated");
     const [accent, setAccent] = useState<string>(link.accent || "");
     const [ctaLabel, setCtaLabel] = useState(link.ctaLabel || "");
     const [price, setPrice] = useState(link.price || "");
@@ -246,6 +247,24 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 >
                                     <option value="full">Full Width</option>
                                     <option value="compact">Compact (Max-W)</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Template Selector */}
+                        {variant === "primaryOffer" && (
+                            <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                                <span className="text-muted-foreground font-medium">Template:</span>
+                                <select
+                                    value={template}
+                                    onChange={(e) => handleSave("template", e.target.value, setTemplate)}
+                                    disabled={isPending}
+                                    className="bg-background sm:bg-muted text-foreground border border-border sm:border-transparent rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-primary outline-none flex-1 sm:flex-none"
+                                >
+                                    <option value="elevated">Elevated</option>
+                                    <option value="split">Split Layout</option>
+                                    <option value="minimal">Minimal Ghost</option>
+                                    <option value="banner">Full Banner</option>
                                 </select>
                             </div>
                         )}

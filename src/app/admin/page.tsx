@@ -175,6 +175,7 @@ export default async function AdminPage() {
         badge: l.badge || undefined,
         layout: l.layout || undefined,
         accent: l.accent || undefined,
+        template: (l.template as any) || undefined,
         ctaLabel: l.ctaLabel || undefined,
         price: l.price || undefined,
         originalPrice: l.originalPrice || undefined,

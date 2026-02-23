@@ -1,4 +1,5 @@
 export type LinkVariant = "featured" | "default" | "primaryOffer";
+export type PrimaryOfferTemplate = "elevated" | "split" | "minimal" | "banner";
 export type LinkBadge = string;
 export type SocialPlatform = "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "website";
 
@@ -12,6 +13,7 @@ export type LinkItem = {
     badge?: LinkBadge;
     layout?: string;
     accent?: string;
+    template?: PrimaryOfferTemplate;
     ctaLabel?: string;
     price?: string;
     originalPrice?: string;
