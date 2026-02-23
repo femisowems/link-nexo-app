@@ -195,6 +195,17 @@ export async function updateLink(id: string, data: Partial<typeof links.$inferIn
         throw new Error("Unauthorized");
     }
 
+    if (data.variant === "primaryOffer") {
+        await db.update(links)
+            .set({ variant: "featured" })
+            .where(
+                and(
+                    eq(links.profileId, link.profileId),
+                    eq(links.variant, "primaryOffer")
+                )
+            );
+    }
+
     await db.update(links).set(data).where(eq(links.id, id));
     revalidatePath("/admin");
     return { success: true };

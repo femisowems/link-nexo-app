@@ -1,7 +1,10 @@
 "use client";
 
-import { LinkItem } from "@/types";
+import { LinkItem, LinkBadge } from "@/types";
 import { SortableLink } from "./SortableLink";
+import { LinkCard } from "./LinkCard";
+import { PrimaryOfferCard } from "@/components/blocks/PrimaryOfferCard";
+import { Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, LucideIcon } from "lucide-react";
 import {
     DndContext,
     closestCenter,
@@ -29,9 +32,10 @@ interface LinkListProps {
     links: LinkItem[];
     visible?: boolean;
     editable?: boolean;
+    accent?: string;
 }
 
-export function LinkList({ links: initialLinks, visible = true, editable = false }: LinkListProps) {
+export function LinkList({ links: initialLinks, visible = true, editable = false, accent = "blue" }: LinkListProps) {
     const [isEditable, setIsEditable] = useState(editable); // Default to prop value
     const [isSectionVisible, setIsSectionVisible] = useState(visible);
     const { showToast } = useToast();
@@ -111,13 +115,60 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
     };
 
 
-    const displayedLinks = optimisticLinks;
+    let primary: LinkItem | undefined;
+    const sortableItems: LinkItem[] = [];
+
+    for (const link of optimisticLinks) {
+        if (!primary && link.variant === "primaryOffer") {
+            primary = link;
+        } else {
+            sortableItems.push(link.variant === "primaryOffer" && primary ? { ...link, variant: "featured" } : link);
+        }
+    }
+
+    const iconMap: Record<string, LucideIcon> = {
+        website: Globe, email: Mail, calendar: Calendar, youtube: Youtube,
+        github: Github, twitter: Twitter, linkedin: Linkedin, custom: Star,
+    };
 
     return (
         <div className={cn(
-            "w-full max-w-lg mx-auto transition-opacity duration-300",
+            "w-full max-w-lg mx-auto transition-opacity duration-300 flex flex-col gap-4",
             !isSectionVisible && "opacity-50 grayscale"
         )}>
+
+            {/* Primary Offer Rendering */}
+            {primary && (
+                <div className="w-full relative group mb-4">
+                    {isEditable ? (
+                        <div className="relative border-2 border-primary/20 bg-primary/5 rounded-2xl">
+                            <div className="absolute -top-3 left-4 bg-background px-2 text-xs font-bold text-primary uppercase tracking-widest z-10 border border-primary/20 rounded-full shadow-sm">
+                                Primary Offer
+                            </div>
+                            <LinkCard
+                                link={primary}
+                                editable={true}
+                                onToggleVisibility={handleToggleVisibility}
+                                onDelete={handleDeleteLink}
+                            // We explicitly do NOT pass a drag handle here, meaning the item is pinned 📌
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-full relative group">
+                            <PrimaryOfferCard
+                                title={primary.title}
+                                description={primary.subtitle}
+                                href={primary.href}
+                                icon={primary.icon ? iconMap[primary.icon] : undefined}
+                                ctaLabel={primary.ctaLabel}
+                                price={primary.price}
+                                badge={primary.badge === "NEW" || primary.badge === "FEATURED" || primary.badge === "LIVE" ? primary.badge : undefined}
+                                accent={accent}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
 
             <nav aria-label="Main Navigation">
                 <DndContext
@@ -127,18 +178,18 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                     onDragEnd={handleDragEnd}
                 >
                     <SortableContext
-                        items={displayedLinks.map(l => l.id)}
+                        items={sortableItems.map(l => l.id)}
                         strategy={verticalListSortingStrategy}
                         disabled={!isEditable}
                     >
                         <ul className="flex flex-col space-y-2 relative min-h-[50px]">
-                            {displayedLinks.length === 0 && (
+                            {sortableItems.length === 0 && !primary && (
                                 <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                                     <p className="text-muted-foreground font-medium">No links yet.</p>
                                 </div>
                             )}
 
-                            {displayedLinks.map((link) => (
+                            {sortableItems.map((link) => (
                                 <SortableLink
                                     key={link.id}
                                     link={link}
@@ -158,7 +209,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                     animate={{ opacity: 1, y: 0 }}
                     onClick={handleAddLink}
                     disabled={isPending}
-                    className="w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:border-muted-foreground/60 hover:bg-muted/10 transition-all font-medium"
+                    className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:border-muted-foreground/60 hover:bg-muted/10 transition-all font-medium"
                 >
                     <span className="text-xl leading-none">+</span> {isPending ? "Adding..." : "Add Link"}
                 </motion.button>

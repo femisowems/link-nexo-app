@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { ExternalLink, Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { updateLink } from "@/app/actions";
 
 interface LinkCardProps {
     link: LinkItem;
@@ -35,11 +36,15 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
     const [title, setTitle] = useState(link.title);
     const [subtitle, setSubtitle] = useState(link.subtitle || "");
     const [href, setHref] = useState(link.href);
+    const [variant, setVariant] = useState<string>(link.variant || "default");
+    const [ctaLabel, setCtaLabel] = useState(link.ctaLabel || "");
+    const [price, setPrice] = useState(link.price || "");
+    const [badge, setBadge] = useState(link.badge || "");
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
-    // Mock save
-    const handleSave = async (field: string, value: string, setter: (val: string) => void) => {
+    const handleSave = (field: string, value: string, setter: (val: string) => void) => {
         if (field === "url") {
             try {
                 new URL(value); // Basic validation
@@ -49,9 +54,18 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                 return;
             }
         }
-        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Optimistic update
         setter(value);
-        console.log(`Saved ${field}:`, value);
+
+        startTransition(async () => {
+            try {
+                const dbField = field === "url" ? "href" : field;
+                await updateLink(link.id, { [dbField]: value });
+            } catch (err) {
+                console.error("Failed to save", err);
+            }
+        });
     };
 
     // We use a div instead of motion.a to avoid nesting interactive elements (input inside a),
@@ -192,24 +206,76 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
 
             {/* URL Display/Edit (Visible only when editable) */}
             {editable && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/70 group-hover:text-muted-foreground transition-colors border-t border-border/20 pt-2 w-full"
+                <div className="mt-3 flex flex-col gap-3 border-t border-border/20 pt-3 w-full"
                     onClick={() => { }} // Stop navigation when interacting with URL area
                 >
-                    <LinkIcon className="w-3 h-3 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                        <InlineEdit
-                            value={href}
-                            onSave={(val) => handleSave("url", val, setHref)}
-                            label="Link URL"
-                            className={cn("font-mono hover:text-foreground hover:underline decoration-dashed", error && "text-red-500 decoration-red-500")}
-                            inputClassName={cn("font-mono text-xs", error && "border-red-500 focus:ring-red-500")}
-                            disabled={!editable}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-3 w-full items-start sm:items-center">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/70 group-hover:text-muted-foreground transition-colors flex-1 w-full sm:w-auto min-w-0">
+                            <LinkIcon className="w-3 h-3 flex-shrink-0" />
+                            <div className="flex-1 w-full min-w-0">
+                                <InlineEdit
+                                    value={href}
+                                    onSave={(val) => handleSave("url", val, setHref)}
+                                    label="Link URL"
+                                    className={cn("font-mono hover:text-foreground hover:underline decoration-dashed w-full block", error && "text-red-500 decoration-red-500")}
+                                    inputClassName={cn("font-mono text-xs w-full", error && "border-red-500 focus:ring-red-500")}
+                                    disabled={!editable}
+                                />
+                            </div>
+                            {error && (
+                                <div className="flex items-center gap-1 text-red-500 text-[10px] uppercase font-bold animate-in fade-in">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {error}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Variant Selector */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none">
+                            <span className="text-muted-foreground font-medium">Variant:</span>
+                            <select
+                                value={variant}
+                                onChange={(e) => handleSave("variant", e.target.value, setVariant)}
+                                disabled={isPending}
+                                className="bg-background sm:bg-muted text-foreground border border-border sm:border-transparent rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-primary outline-none flex-1 sm:flex-none"
+                            >
+                                <option value="default">Default</option>
+                                <option value="featured">Featured</option>
+                                <option value="primaryOffer">Primary Offer Block</option>
+                            </select>
+                        </div>
                     </div>
-                    {error && (
-                        <div className="flex items-center gap-1 text-red-500 text-[10px] uppercase font-bold animate-in fade-in">
-                            <AlertCircle className="w-3 h-3" />
-                            {error}
+
+                    {/* Extra Meta fields row */}
+                    {variant === "primaryOffer" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">CTA Label</label>
+                                <InlineEdit
+                                    value={ctaLabel}
+                                    onSave={(val) => handleSave("ctaLabel", val, setCtaLabel)}
+                                    label="CTA Label (e.g. Buy Now)"
+                                    className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
+                                />
+                            </div>
+                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Price</label>
+                                <InlineEdit
+                                    value={price}
+                                    onSave={(val) => handleSave("price", val, setPrice)}
+                                    label="Price (e.g. $49.99)"
+                                    className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
+                                />
+                            </div>
+                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Badge</label>
+                                <InlineEdit
+                                    value={badge}
+                                    onSave={(val) => handleSave("badge", val, setBadge)}
+                                    label="Badge (e.g. NEW)"
+                                    className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

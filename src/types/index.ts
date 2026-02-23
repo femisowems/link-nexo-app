@@ -1,5 +1,5 @@
-export type LinkVariant = "featured" | "default";
-export type LinkBadge = "NEW" | "FEATURED" | "LIVE";
+export type LinkVariant = "featured" | "default" | "primaryOffer";
+export type LinkBadge = string;
 export type SocialPlatform = "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "website";
 
 export type LinkItem = {
@@ -10,6 +10,10 @@ export type LinkItem = {
     icon?: SocialPlatform | "website" | "calendar" | "custom";
     variant?: LinkVariant;
     badge?: LinkBadge;
+    ctaLabel?: string;
+    price?: string;
+    originalPrice?: string;
+    rating?: string;
     thumbnailUrl?: string;
     analyticsEventName?: string;
     openInNewTab?: boolean;
