@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
-    const isLoggedIn = !!req.auth;
+    const isLoggedIn = !!req.auth?.user?.id;
     const isOnAdmin = req.nextUrl.pathname.startsWith("/admin");
     const isOnLogin = req.nextUrl.pathname.startsWith("/login");
 
