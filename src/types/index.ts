@@ -10,6 +10,8 @@ export type LinkItem = {
     icon?: SocialPlatform | "website" | "calendar" | "custom";
     variant?: LinkVariant;
     badge?: LinkBadge;
+    layout?: string;
+    accent?: string;
     ctaLabel?: string;
     price?: string;
     originalPrice?: string;

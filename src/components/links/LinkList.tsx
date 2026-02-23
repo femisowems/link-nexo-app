@@ -141,8 +141,8 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
             {primary && (
                 <div className="w-full relative group mb-4">
                     {isEditable ? (
-                        <div className="relative border-2 border-primary/20 bg-primary/5 rounded-2xl">
-                            <div className="absolute -top-3 left-4 bg-background px-2 text-xs font-bold text-primary uppercase tracking-widest z-10 border border-primary/20 rounded-full shadow-sm">
+                        <div className="relative border-[1.5px] border-border/60 bg-card rounded-2xl shadow-sm mt-3 pt-1">
+                            <div className="absolute -top-3 left-4 bg-background px-3 py-0.5 text-[10.5px] font-bold text-foreground uppercase tracking-widest z-10 border-[1.5px] border-border/60 rounded-full shadow-sm">
                                 Primary Offer
                             </div>
                             <LinkCard
@@ -162,8 +162,12 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                                 icon={primary.icon ? iconMap[primary.icon] : undefined}
                                 ctaLabel={primary.ctaLabel}
                                 price={primary.price}
-                                badge={primary.badge === "NEW" || primary.badge === "FEATURED" || primary.badge === "LIVE" ? primary.badge : undefined}
-                                accent={accent}
+                                originalPrice={primary.originalPrice}
+                                rating={primary.rating}
+                                thumbnailUrl={primary.thumbnailUrl}
+                                layout={primary.layout}
+                                badge={primary.badge === "NEW" || primary.badge === "FEATURED" || primary.badge === "LIVE" ? primary.badge : primary.badge}
+                                accent={primary.accent || accent}
                             />
                         </div>
                     )}

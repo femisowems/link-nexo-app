@@ -97,6 +97,8 @@ export const links = pgTable("link", {
     icon: text("icon"),
     variant: text("variant").default("default"),
     badge: text("badge"),
+    layout: text("layout").default("full"),
+    accent: text("accent"),
     ctaLabel: text("ctaLabel"),
     price: text("price"),
     originalPrice: text("originalPrice"),

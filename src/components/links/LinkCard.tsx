@@ -1,7 +1,7 @@
 import { LinkItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2 } from "lucide-react";
+import { ExternalLink, Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useState, useTransition } from "react";
@@ -37,8 +37,12 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
     const [subtitle, setSubtitle] = useState(link.subtitle || "");
     const [href, setHref] = useState(link.href);
     const [variant, setVariant] = useState<string>(link.variant || "default");
+    const [layout, setLayout] = useState<string>(link.layout || "full");
+    const [accent, setAccent] = useState<string>(link.accent || "");
     const [ctaLabel, setCtaLabel] = useState(link.ctaLabel || "");
     const [price, setPrice] = useState(link.price || "");
+    const [originalPrice, setOriginalPrice] = useState(link.originalPrice || "");
+    const [rating, setRating] = useState(link.rating || "");
     const [badge, setBadge] = useState(link.badge || "");
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
@@ -209,8 +213,8 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                 <div className="mt-3 flex flex-col gap-3 border-t border-border/20 pt-3 w-full"
                     onClick={() => { }} // Stop navigation when interacting with URL area
                 >
-                    <div className="flex flex-col sm:flex-row gap-3 w-full items-start sm:items-center">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground/70 group-hover:text-muted-foreground transition-colors flex-1 w-full sm:w-auto min-w-0">
+                    <div className="flex flex-col sm:flex-row gap-3 w-full items-start sm:items-center sm:flex-wrap">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/70 group-hover:text-muted-foreground transition-colors flex-1 w-full min-w-[200px]">
                             <LinkIcon className="w-3 h-3 flex-shrink-0" />
                             <div className="flex-1 w-full min-w-0">
                                 <InlineEdit
@@ -230,8 +234,24 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                             )}
                         </div>
 
+                        {/* Layout Selector */}
+                        {variant === "primaryOffer" && (
+                            <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                                <span className="text-muted-foreground font-medium">Layout:</span>
+                                <select
+                                    value={layout}
+                                    onChange={(e) => handleSave("layout", e.target.value, setLayout)}
+                                    disabled={isPending}
+                                    className="bg-background sm:bg-muted text-foreground border border-border sm:border-transparent rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-primary outline-none flex-1 sm:flex-none"
+                                >
+                                    <option value="full">Full Width</option>
+                                    <option value="compact">Compact (Max-W)</option>
+                                </select>
+                            </div>
+                        )}
+
                         {/* Variant Selector */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none">
+                        <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
                             <span className="text-muted-foreground font-medium">Variant:</span>
                             <select
                                 value={variant}
@@ -244,35 +264,81 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 <option value="primaryOffer">Primary Offer Block</option>
                             </select>
                         </div>
+
+                        {/* Accent Color Picker */}
+                        {variant === "primaryOffer" && (
+                            <div className="flex items-center gap-1.5 ml-0 sm:ml-2">
+                                {[
+                                    { id: "blue", bg: "bg-blue-500" },
+                                    { id: "violet", bg: "bg-violet-500" },
+                                    { id: "rose", bg: "bg-rose-500" },
+                                    { id: "amber", bg: "bg-amber-500" },
+                                    { id: "emerald", bg: "bg-emerald-500" },
+                                    { id: "slate", bg: "bg-slate-500" },
+                                ].map((color) => (
+                                    <button
+                                        key={color.id}
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); handleSave("accent", color.id, setAccent); }}
+                                        className={cn(
+                                            "w-5 h-5 rounded-full flex items-center justify-center transition-all",
+                                            color.bg,
+                                            accent === color.id ? "ring-2 ring-offset-1 ring-foreground/20 scale-110" : "hover:scale-105 opacity-80 hover:opacity-100"
+                                        )}
+                                        aria-label={`Select ${color.id} color`}
+                                    >
+                                        {accent === color.id && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Extra Meta fields row */}
                     {variant === "primaryOffer" && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+                        <div className="flex flex-wrap gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-300 mt-2">
+                            <div className="flex-[1_1_85px] min-w-[85px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm">
                                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">CTA Label</label>
                                 <InlineEdit
                                     value={ctaLabel}
                                     onSave={(val) => handleSave("ctaLabel", val, setCtaLabel)}
-                                    label="CTA Label (e.g. Buy Now)"
+                                    label="e.g. Buy Now"
                                     className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
                                 />
                             </div>
-                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+                            <div className="flex-[1_1_85px] min-w-[85px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm">
                                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Price</label>
                                 <InlineEdit
                                     value={price}
                                     onSave={(val) => handleSave("price", val, setPrice)}
-                                    label="Price (e.g. $49.99)"
+                                    label="e.g. $49"
                                     className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
                                 />
                             </div>
-                            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Badge</label>
+                            <div className="flex-[1_1_85px] min-w-[85px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Orig. Price</label>
+                                <InlineEdit
+                                    value={originalPrice}
+                                    onSave={(val) => handleSave("originalPrice", val, setOriginalPrice)}
+                                    label="e.g. $99"
+                                    className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
+                                />
+                            </div>
+                            <div className="flex-[1_1_85px] min-w-[85px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Rating</label>
+                                <InlineEdit
+                                    value={rating}
+                                    onSave={(val) => handleSave("rating", val, setRating)}
+                                    label="e.g. 4.7"
+                                    className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
+                                />
+                            </div>
+                            <div className="flex-[1_1_85px] min-w-[85px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Discount</label>
                                 <InlineEdit
                                     value={badge}
                                     onSave={(val) => handleSave("badge", val, setBadge)}
-                                    label="Badge (e.g. NEW)"
+                                    label="e.g. 50% OFF"
                                     className="text-xs text-foreground font-medium min-h-[1.5em] block w-full hover:underline decoration-dashed decoration-1 underline-offset-2"
                                 />
                             </div>
