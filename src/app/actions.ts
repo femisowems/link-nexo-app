@@ -27,7 +27,7 @@ export async function createProfile(formData: FormData): Promise<{ success?: boo
         userId: session.user.id,
         handle,
         bio: "",
-        location: "",
+        location: "Everywhere, World",
         avatarUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${handle}`,
         sectionVisibility: JSON.stringify({ profile: true, socials: true, links: true }),
     }).returning();
