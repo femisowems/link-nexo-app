@@ -5,8 +5,7 @@ import {
     text,
     primaryKey,
     integer,
-    boolean,
-    uuid
+    boolean
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "@auth/core/adapters";
 import { relations } from "drizzle-orm";

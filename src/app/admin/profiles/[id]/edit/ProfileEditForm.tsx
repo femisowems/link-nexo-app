@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition } from "react";
 import { updateProfileInfo } from "@/app/admin/settings/actions";
 import { SettingsAvatarUpload } from "@/components/settings/SettingsAvatarUpload";
 import { SettingsToggle } from "@/components/settings/SettingsToggle";

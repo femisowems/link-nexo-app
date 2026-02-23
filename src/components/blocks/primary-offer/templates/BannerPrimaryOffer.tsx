@@ -1,13 +1,14 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PrimaryOfferCardProps, accentStyles } from "../types";
 
 export function BannerPrimaryOffer({
     title,
-    description,
+
     href,
     icon: Icon,
     ctaLabel,
@@ -111,7 +112,7 @@ export function BannerPrimaryOffer({
                                 styles.cta,
                                 styles.focus
                             )}
-                            onClick={(e) => { }} // No-op
+                            onClick={() => { }} // No-op
                             tabIndex={-1}
                         >
                             {ctaLabel}

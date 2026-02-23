@@ -8,10 +8,11 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
 import { redirect } from "next/navigation";
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { parseLocation } from "@/lib/utils";
 
 import { AlertCircle, UserPlus, AtSign, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 // Form to create profile if missing
 function CreateProfile({ userId }: { userId: string }) {
@@ -37,7 +38,7 @@ function CreateProfile({ userId }: { userId: string }) {
                     </div>
                     <h2 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Welcome to Link-Nexo</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px]">
-                        Let's get started by claiming your unique profile handle.
+                        Let&apos;s get started by claiming your unique profile handle.
                     </p>
                 </div>
 
@@ -176,7 +177,7 @@ export default async function AdminPage({
                             onClick={undefined} // Server component, we'd probably use a Link back to admin instead
                             className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-2"
                         >
-                            <a href="/admin">&larr; Back to Profiles</a>
+                            <Link href="/admin">&larr; Back to Profiles</Link>
                         </button>
                     </div>
                 )}
@@ -218,7 +219,7 @@ export default async function AdminPage({
         badge: l.badge || undefined,
         layout: l.layout || undefined,
         accent: l.accent || undefined,
-        template: (l.template as any) || undefined,
+        template: (l.template as "elevated" | "minimal" | "banner" | "split") || undefined,
         ctaLabel: l.ctaLabel || undefined,
         price: l.price || undefined,
         originalPrice: l.originalPrice || undefined,

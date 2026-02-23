@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import Credentials from "next-auth/providers/credentials";
-import { users, accounts } from "@/db/schema"; // Import accounts too if needed later
+import { users } from "@/db/schema"; // Import accounts too if needed later
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";

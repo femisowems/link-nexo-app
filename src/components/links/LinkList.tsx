@@ -1,6 +1,6 @@
 "use client";
 
-import { LinkItem, LinkBadge } from "@/types";
+import { LinkItem } from "@/types";
 import { SortableLink } from "./SortableLink";
 import { LinkCard } from "./LinkCard";
 import { PrimaryOfferRenderer } from "@/components/blocks/primary-offer/PrimaryOfferRenderer";
@@ -22,7 +22,6 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { useState, useOptimistic, useTransition } from "react";
-import { Edit2, Check, Sparkles, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
@@ -36,8 +35,8 @@ interface LinkListProps {
 }
 
 export function LinkList({ links: initialLinks, visible = true, editable = false, accent = "blue" }: LinkListProps) {
-    const [isEditable, setIsEditable] = useState(editable); // Default to prop value
-    const [isSectionVisible, setIsSectionVisible] = useState(visible);
+    const [isEditable] = useState(editable); // Default to prop value
+    const [isSectionVisible] = useState(visible);
     const { showToast } = useToast();
     const [isPending, startTransition] = useTransition();
 
@@ -166,7 +165,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                                 rating={primary.rating}
                                 thumbnailUrl={primary.thumbnailUrl}
                                 layout={primary.layout}
-                                template={primary.template as any}
+                                template={(primary.template as "elevated" | "minimal" | "banner" | "split") || undefined}
                                 badge={primary.badge === "NEW" || primary.badge === "FEATURED" || primary.badge === "LIVE" ? primary.badge : primary.badge}
                                 accent={primary.accent || accent}
                             />

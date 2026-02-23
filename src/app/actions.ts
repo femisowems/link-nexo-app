@@ -4,9 +4,9 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { links, profiles, users, socials } from "@/db/schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+
 import { mockData } from "@/data/mock-data";
 
 // --- Profile Actions ---
@@ -82,12 +82,7 @@ export async function deleteProfile(profileId: string): Promise<{ success?: bool
     return { success: true };
 }
 
-const UpdateProfileSchema = z.object({
-    name: z.string().min(1).optional(),
-    bio: z.string().optional(),
-    location: z.string().optional(),
-    handle: z.string().min(3).optional(), // Handle updates might need unique check
-});
+
 
 export async function updateProfile(formData: { [key: string]: string }) {
     const session = await auth();
@@ -95,7 +90,7 @@ export async function updateProfile(formData: { [key: string]: string }) {
 
     const userId = session.user.id;
     // Check if profile exists for user, if not create one?
-    let profile = await db.query.profiles.findFirst({
+    const profile = await db.query.profiles.findFirst({
         where: eq(profiles.userId, userId),
     });
 
@@ -239,11 +234,7 @@ export async function reorderLinks(items: { id: string; order: number }[]) {
     // Optimization: Just check the profile of the first link?
     // Let's do a batch check if possible or just check one for now as a reasonable heuristic if we trust the UI sends consistent lists
     // precise way:
-    const ids = items.map(i => i.id);
-    const linksToCheck = await db.query.links.findMany({
-        where: url_links => url_links.id ? undefined : undefined, // drizzle "inArray" needed?
-        // Let's use raw SQL or imported inArray
-    });
+    // Let's use raw SQL or imported inArray
 
     // Actually, simpler to just rely on the fact that if you try to update a link you don't own, we can block it.
     // But we are using a loop.

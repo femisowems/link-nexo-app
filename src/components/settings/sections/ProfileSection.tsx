@@ -90,7 +90,7 @@ export function ProfileSection({ settings, updateSetting }: ProfileSectionProps)
                     <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300">
                         <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         <p className="text-xs leading-relaxed">
-                            The verified badge is visual-only and not backed by a verification process. It'll appear on your public profile.
+                            The verified badge is visual-only and not backed by a verification process. It&apos;ll appear on your public profile.
                         </p>
                     </div>
                 )}

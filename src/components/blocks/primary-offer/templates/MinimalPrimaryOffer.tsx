@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -120,7 +121,7 @@ export function MinimalPrimaryOffer({
                                 styles.text,
                                 styles.focus
                             )}
-                            onClick={(e) => { }} // No-op
+                            onClick={() => { }} // No-op
                             tabIndex={-1}
                         >
                             {ctaLabel}

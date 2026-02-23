@@ -24,13 +24,13 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
     const [bio, setBio] = useState(profile.bio);
 
     // Track Location parts
-    const isStructured = typeof profile.location === 'object';
-    const initialCity = isStructured ? (profile.location as any).city : "";
-    const initialCountry = isStructured ? (profile.location as any).country : (profile.location === "Everywhere, World" ? "WORLD" : "");
-    const initialDisplay = isStructured ? (profile.location as any).display : (profile.location || "");
+    const isStructured = typeof profile.location === 'object' && profile.location !== null;
+    const initialCity = isStructured ? (profile.location as { city?: string }).city || "" : "";
+    const initialCountry = isStructured ? (profile.location as { country?: string }).country || "" : (profile.location === "Everywhere, World" ? "WORLD" : "");
+    const initialDisplay = isStructured ? (profile.location as { display?: string }).display || "" : (typeof profile.location === "string" ? profile.location : "");
 
-    const [city, setCity] = useState(initialCity);
-    const [country, setCountry] = useState(initialCountry);
+    const [city, setCity] = useState<string>(initialCity);
+    const [country, setCountry] = useState<string>(initialCountry);
     const [displayLocation, setDisplayLocation] = useState<string>(initialDisplay);
 
     const { showToast } = useToast();
@@ -58,15 +58,12 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
         setCity(newCity);
         setCountry(newCountry);
 
-        let finalLocationString = "";
         let newDisplay = "";
         if (newCountry === "WORLD") {
-            finalLocationString = "Everywhere, World";
             newDisplay = "Everywhere, World";
         } else if (newCity || newCountry) {
             const countryName = COUNTRIES.find(c => c.code === newCountry)?.name || "";
             newDisplay = [newCity, countryName].filter(Boolean).join(", ");
-            finalLocationString = JSON.stringify({ city: newCity, country: newCountry, display: newDisplay });
         }
 
         // Firing the save handler to run the toast and update mock state

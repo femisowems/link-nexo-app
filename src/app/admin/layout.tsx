@@ -2,6 +2,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { signOut } from "@/auth"; // Use server action for signout? No, import from auth config
+import Link from "next/link";
 
 export default async function AdminLayout({
     children,
@@ -17,9 +18,9 @@ export default async function AdminLayout({
                 <div className="flex gap-4 items-center">
                     <div className="font-bold text-lg">Link-Nexo Admin</div>
                     <nav className="ml-4 border-l pl-4 hidden md:flex gap-4">
-                        <a href="/admin" className="text-sm font-medium hover:text-primary">Dashboard</a>
-                        <a href="/admin/profiles" className="text-sm font-medium hover:text-primary">My Profiles</a>
-                        <a href="/admin/settings" className="text-sm font-medium hover:text-primary">Settings</a>
+                        <Link href="/admin" className="text-sm font-medium hover:text-primary">Dashboard</Link>
+                        <Link href="/admin/profiles" className="text-sm font-medium hover:text-primary">My Profiles</Link>
+                        <Link href="/admin/settings" className="text-sm font-medium hover:text-primary">Settings</Link>
                     </nav>
                 </div>
                 <div className="flex gap-4 items-center">

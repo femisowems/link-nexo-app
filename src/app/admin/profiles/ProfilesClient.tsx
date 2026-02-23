@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Trash2, ExternalLink, Link2, Share2, PencilLine,
-    X, AlertTriangle, CheckCircle2, XCircle, AtSign, Loader2,
+    X, AlertTriangle, XCircle, AtSign, Loader2,
 } from "lucide-react";
 import { createProfile, deleteProfile } from "@/app/actions";
 import Link from "next/link";
@@ -268,7 +268,7 @@ function ProfileCard({ profile, onDeleteClick }: { profile: ProfileCardData; onD
 
                 {profile.location && (
                     <p className="text-muted-foreground text-xs">
-                        📍 {typeof parseLocation(profile.location) === 'string' ? parseLocation(profile.location) as string : (parseLocation(profile.location) as any).display}
+                        📍 {typeof parseLocation(profile.location) === 'string' ? parseLocation(profile.location) as string : (parseLocation(profile.location) as { display: string }).display}
                     </p>
                 )}
             </div>

@@ -13,7 +13,7 @@ interface DataPrivacySectionProps {
     reduceMotion: boolean;
 }
 
-export function DataPrivacySection({ settings, exportSettings, resetSettings, reduceMotion }: DataPrivacySectionProps) {
+export function DataPrivacySection({ exportSettings, resetSettings, reduceMotion }: DataPrivacySectionProps) {
     const [showConfirm, setShowConfirm] = useState(false);
 
     const handleReset = () => {

@@ -30,7 +30,7 @@ export default function LoginPage() {
                 router.push("/admin");
                 router.refresh();
             }
-        } catch (error) {
+        } catch {
             showToast("An error occurred");
         } finally {
             setIsLoading(false);

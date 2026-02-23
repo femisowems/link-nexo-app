@@ -1,13 +1,12 @@
 
 import { db } from "@/db";
-import { profiles, links } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { profiles } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { parseLocation } from "@/lib/utils";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
-import { Footer } from "@/components/layout/Footer";
 import { LinkItem } from "@/types";
 import type { Metadata } from "next";
 
@@ -49,13 +48,13 @@ async function getProfile(handle: string) {
             subtitle: l.subtitle || undefined,
             href: l.href,
             visible: l.visible ?? true,
-            icon: (l.icon as any) || undefined,
+            icon: (l.icon as "website" | "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "calendar" | "custom") || undefined,
             order: l.order ?? 0,
-            variant: (l.variant as any) || undefined,
-            badge: (l.badge as any) || undefined,
+            variant: (l.variant as "featured" | "default" | "primaryOffer") || undefined,
+            badge: l.badge || undefined,
             layout: l.layout || undefined,
             accent: l.accent || undefined,
-            template: (l.template as any) || undefined,
+            template: (l.template as "elevated" | "minimal" | "banner" | "split") || undefined,
             ctaLabel: l.ctaLabel || undefined,
             price: l.price || undefined,
             originalPrice: l.originalPrice || undefined,
@@ -79,7 +78,7 @@ async function getProfile(handle: string) {
         socials: profile.socials.map(s => ({
             ...s,
             // Cast platform to correct type or validate
-            platform: s.platform as any,
+            platform: s.platform as "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "website",
             label: s.label || undefined,
             visible: s.visible ?? true,
             order: s.order ?? 0
@@ -123,7 +122,6 @@ export default async function ProfilePage({ params }: Props) {
     const { preferences } = profile;
 
     // Define public HTML root equivalent wrapper styles based on preferences
-    const isDark = preferences?.theme === "dark" || (preferences?.theme === "system" /* assume light fallback for SSR without client match-media, or default to dark? We'll let CSS handle base, and force dark if explicit */);
     const themeClass = preferences?.theme === "dark" ? "dark" : preferences?.theme === "light" ? "light" : "";
     const motionClass = preferences?.reduceMotion ? "reduce-motion" : "";
     const contrastClass = preferences?.highContrastMode ? "high-contrast" : "";
