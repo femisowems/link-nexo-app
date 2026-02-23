@@ -168,8 +168,13 @@ export default async function AdminPage() {
         ...l,
         subtitle: l.subtitle || undefined,
         visible: l.visible ?? true,
-        icon: (l.icon as "website" | "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "calendar" | "custom") || undefined, // Transform null to undefined or default
-        order: l.order ?? 0
+        icon: (l.icon as "website" | "github" | "linkedin" | "twitter" | "youtube" | "instagram" | "email" | "calendar" | "custom") || undefined,
+        order: l.order ?? 0,
+        variant: (l.variant as "featured" | "default") || undefined,
+        badge: (l.badge as "NEW" | "FEATURED" | "LIVE") || undefined,
+        thumbnailUrl: l.thumbnailUrl || undefined,
+        analyticsEventName: l.analyticsEventName || undefined,
+        openInNewTab: l.openInNewTab ?? undefined,
     }));
 
     // Transform for UI

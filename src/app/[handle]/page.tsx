@@ -44,11 +44,16 @@ async function getProfile(handle: string) {
         .map(l => ({
             id: l.id,
             title: l.title,
+            subtitle: l.subtitle || undefined,
             href: l.href,
             visible: l.visible ?? true,
-            icon: l.icon as any, // Cast or validate
+            icon: (l.icon as any) || undefined,
             order: l.order ?? 0,
-            profileId: l.profileId
+            variant: (l.variant as any) || undefined,
+            badge: (l.badge as any) || undefined,
+            thumbnailUrl: l.thumbnailUrl || undefined,
+            analyticsEventName: l.analyticsEventName || undefined,
+            openInNewTab: l.openInNewTab ?? undefined,
         }));
 
     return {
