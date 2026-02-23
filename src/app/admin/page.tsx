@@ -141,15 +141,58 @@ function CreateProfile({ userId }: { userId: string }) {
     );
 }
 
-export default async function AdminPage() {
+import { ProfileSwitcher } from "@/components/profile/ProfileSwitcher";
+
+export default async function AdminPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ profileId?: string, new?: string }>
+}) {
     const session = await auth();
 
     if (!session?.user?.id) {
         redirect("/login");
     }
 
-    const profile = await db.query.profiles.findFirst({
+    // Await search params for Next.js 15+
+    const resolvedSearchParams = await searchParams;
+
+    // Fetch all profiles to populate switcher
+    const allProfiles = await db.query.profiles.findMany({
         where: eq(profiles.userId, session.user.id),
+        orderBy: [desc(profiles.id)] // Optional ordering
+    });
+
+    const isRequestingNew = resolvedSearchParams?.new === "true";
+
+    // If no profiles exist, or they specifically requested a new one, show create form
+    if (allProfiles.length === 0 || isRequestingNew) {
+        return (
+            <div className="max-w-md mx-auto p-4 space-y-4">
+                {allProfiles.length > 0 && (
+                    <div className="flex justify-between items-center mb-8">
+                        <button
+                            // Add a back button if they came from an existing profile but clicked 'new'
+                            onClick={undefined} // Server component, we'd probably use a Link back to admin instead
+                            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-2"
+                        >
+                            <a href="/admin">&larr; Back to Profiles</a>
+                        </button>
+                    </div>
+                )}
+                <CreateProfile userId={session.user.id} />
+            </div>
+        );
+    }
+
+    // Determine active profile based on search param or default to first
+    let activeProfileId = resolvedSearchParams?.profileId;
+    if (!activeProfileId || !allProfiles.some(p => p.id === activeProfileId)) {
+        activeProfileId = allProfiles[0].id;
+    }
+
+    const profile = await db.query.profiles.findFirst({
+        where: eq(profiles.id, activeProfileId),
         with: {
             user: true,
             links: {
@@ -162,7 +205,7 @@ export default async function AdminPage() {
     });
 
     if (!profile) {
-        return <CreateProfile userId={session.user.id} />;
+        redirect("/admin"); // Fallback if somehow invalid
     }
 
     const formattedLinks = profile.links.map(l => ({
@@ -204,16 +247,34 @@ export default async function AdminPage() {
         }))
     };
 
+    const switcherProfiles = allProfiles.map(p => ({
+        id: p.id,
+        handle: p.handle,
+        avatarUrl: p.avatarUrl
+    }));
+
     return (
         <div className="max-w-md mx-auto p-4 space-y-8 min-h-screen">
-            <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg">
-                <div>
-                    <h2 className="font-semibold">Your Link:</h2>
-                    <a href={`/${profile.handle}`} target="_blank" className="text-blue-500 hover:underline">
-                        {`/${profile.handle}`}
-                    </a>
+            <div className="flex flex-col gap-4 bg-muted/20 p-4 rounded-lg">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="font-semibold text-sm text-muted-foreground mb-1">Your Link:</h2>
+                        <a href={`/${profile.handle}`} target="_blank" className="text-blue-500 hover:underline font-medium">
+                            {`/${profile.handle}`}
+                        </a>
+                    </div>
+                    <button className="text-xs border px-3 py-1.5 rounded-md hover:bg-muted transition-colors font-medium">Share</button>
                 </div>
-                <button className="text-xs border px-2 py-1 rounded">Share</button>
+
+                <div className="h-px bg-border/50 w-full" />
+
+                <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Active Profile:</span>
+                    <ProfileSwitcher
+                        profiles={switcherProfiles}
+                        activeProfileId={profile.id}
+                    />
+                </div>
             </div>
 
             <ProfileHeader profile={formattedProfile} editable={true} />
