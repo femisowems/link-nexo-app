@@ -1,11 +1,13 @@
 import { LinkItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check } from "lucide-react";
+import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useState, useTransition } from "react";
 import { updateLink } from "@/app/actions";
+import { IconSelectorModal, AVAILABLE_ICONS } from "./IconSelectorModal";
+import { AnimatePresence } from "framer-motion";
 
 interface LinkCardProps {
     link: LinkItem;
@@ -17,19 +19,12 @@ interface LinkCardProps {
     autoFocusTitle?: boolean;
 }
 
-const iconMap = {
-    website: Globe,
-    email: Mail,
-    calendar: Calendar,
-    youtube: Youtube,
-    github: Github,
-    twitter: Twitter,
-    linkedin: Linkedin,
-    custom: Star,
-};
+
 
 export function LinkCard({ link, editable = false, dragHandle, onToggleVisibility, onDelete, autoFocusTitle = false }: LinkCardProps) {
-    const Icon = link.icon ? iconMap[link.icon as keyof typeof iconMap] || Globe : null;
+    const [localIconId, setLocalIconId] = useState<string>(link.icon || "website");
+    const IconRecord = AVAILABLE_ICONS.find(i => i.id === localIconId);
+    const Icon = IconRecord ? IconRecord.icon : Globe;
     const isFeatured = link.variant === "featured";
     const isVisible = link.visible !== false; // Default to true
 
@@ -48,6 +43,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [isPending, startTransition] = useTransition();
+    const [isIconModalOpen, setIsIconModalOpen] = useState(false);
 
     const handleSave = (field: string, value: string, setter: (val: string) => void) => {
         if (field === "url") {
@@ -161,12 +157,23 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
             <div className="flex items-center w-full">
                 {/* Icon Section */}
                 {Icon && (
-                    <div className={cn(
-                        "flex-shrink-0 mr-4 p-2 rounded-xl",
-                        isFeatured ? "bg-white/10" : "bg-muted text-foreground"
-                    )}>
+                    <button
+                        onClick={(e) => {
+                            if (editable) {
+                                e.stopPropagation();
+                                setIsIconModalOpen(true);
+                            }
+                        }}
+                        disabled={!editable}
+                        className={cn(
+                            "flex-shrink-0 mr-4 p-2 rounded-xl transition-all outline-none",
+                            isFeatured ? "bg-white/10" : "bg-muted text-foreground",
+                            editable ? "hover:scale-105 hover:ring-2 hover:ring-primary/40 cursor-pointer" : "cursor-default"
+                        )}
+                        title={editable ? "Change Icon" : undefined}
+                    >
                         <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </div>
+                    </button>
                 )}
 
                 {/* Content Section */}
@@ -311,6 +318,27 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 ))}
                             </div>
                         )}
+
+                        {/* Standard Link Badge Toggle (Shown if NOT primaryOffer) */}
+                        {variant !== "primaryOffer" && (
+                            <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                                <span className="text-muted-foreground font-medium">New Badge:</span>
+                                <div className="flex bg-muted rounded-md p-0.5 border border-border">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleSave("badge", "NEW", setBadge); }}
+                                        className={cn("px-2.5 py-1 text-xs font-semibold rounded-sm transition-all", badge === "NEW" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+                                    >
+                                        ON
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleSave("badge", "", setBadge); }}
+                                        className={cn("px-2.5 py-1 text-xs font-semibold rounded-sm transition-all", badge !== "NEW" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+                                    >
+                                        OFF
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Extra Meta fields row */}
@@ -380,6 +408,18 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                     </span>
                 </div>
             )}
+
+            <AnimatePresence>
+                {isIconModalOpen && (
+                    <IconSelectorModal
+                        currentIconId={localIconId}
+                        onSelect={(id) => {
+                            handleSave("icon", id, setLocalIconId);
+                        }}
+                        onClose={() => setIsIconModalOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

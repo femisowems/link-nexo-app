@@ -4,7 +4,7 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { links, profiles, users, socials } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { mockData } from "@/data/mock-data";
@@ -143,24 +143,24 @@ export async function updatePreferences(preferences: string) {
 
 // --- Link Actions ---
 
-export async function addLink() {
+export async function addLink(profileId: string) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
     const userId = session.user.id;
     const profile = await db.query.profiles.findFirst({
-        where: eq(profiles.userId, userId),
+        where: and(eq(profiles.userId, userId), eq(profiles.id, profileId)),
     });
 
     if (!profile) throw new Error("Profile not found");
 
-    // Get max order
+    // Get min order to place at bottom (UI sorts desc)
     const existingLinks = await db.query.links.findMany({
         where: eq(links.profileId, profile.id),
-        orderBy: [desc(links.order)],
+        orderBy: [asc(links.order)],
         limit: 1,
     });
-    const newOrder = (existingLinks[0]?.order ?? -1) + 1;
+    const newOrder = (existingLinks[0]?.order ?? 0) - 1;
 
     const newLink = await db.insert(links).values({
         profileId: profile.id,

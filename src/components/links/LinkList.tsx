@@ -4,7 +4,7 @@ import { LinkItem } from "@/types";
 import { SortableLink } from "./SortableLink";
 import { LinkCard } from "./LinkCard";
 import { PrimaryOfferRenderer } from "@/components/blocks/primary-offer/PrimaryOfferRenderer";
-import { Globe, Mail, Calendar, Youtube, Github, Twitter, Linkedin, Star, LucideIcon } from "lucide-react";
+import { AVAILABLE_ICONS } from "./IconSelectorModal";
 import {
     DndContext,
     closestCenter,
@@ -32,9 +32,10 @@ interface LinkListProps {
     visible?: boolean;
     editable?: boolean;
     accent?: string;
+    profileId: string;
 }
 
-export function LinkList({ links: initialLinks, visible = true, editable = false, accent = "blue" }: LinkListProps) {
+export function LinkList({ links: initialLinks, profileId, visible = true, editable = false, accent = "blue" }: LinkListProps) {
     const [isEditable] = useState(editable); // Default to prop value
     const [isSectionVisible] = useState(visible);
     const { showToast } = useToast();
@@ -100,7 +101,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
         startTransition(async () => {
             // Optimistic?
             // addOptimisticLink({ id: "temp", title: "New Link", ... } as LinkItem);
-            const res = await addLink();
+            const res = await addLink(profileId);
             if (res.success) showToast("Link added");
         });
     };
@@ -125,10 +126,8 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
         }
     }
 
-    const iconMap: Record<string, LucideIcon> = {
-        website: Globe, email: Mail, calendar: Calendar, youtube: Youtube,
-        github: Github, twitter: Twitter, linkedin: Linkedin, custom: Star,
-    };
+    const primaryIconRecord = primary?.icon ? AVAILABLE_ICONS.find(i => i.id === primary?.icon) : null;
+    const PrimaryIconCmp = primaryIconRecord?.icon;
 
     return (
         <div className={cn(
@@ -158,7 +157,7 @@ export function LinkList({ links: initialLinks, visible = true, editable = false
                                 title={primary.title}
                                 description={primary.subtitle}
                                 href={primary.href}
-                                icon={primary.icon ? iconMap[primary.icon] : undefined}
+                                icon={PrimaryIconCmp}
                                 ctaLabel={primary.ctaLabel}
                                 price={primary.price}
                                 originalPrice={primary.originalPrice}

@@ -280,7 +280,7 @@ export default async function AdminPage({
 
             <ProfileHeader profile={formattedProfile} editable={true} />
             <SocialRow socials={formattedProfile.socials} visible={formattedProfile.sectionVisibility?.socials} editable={true} />
-            <LinkList links={formattedLinks} visible={true} editable={true} />
+            <LinkList links={formattedLinks} profileId={profile.id} visible={true} editable={true} />
         </div>
     );
 }
