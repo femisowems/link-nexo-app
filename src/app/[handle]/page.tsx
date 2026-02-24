@@ -137,7 +137,7 @@ export default async function ProfilePage({ params }: Props) {
                 <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
                     <ProfileHeader profile={profile} editable={false} />
                     <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
-                    <LinkList links={profile.links} visible={profile.sectionVisibility?.links} editable={false} accent={preferences?.accentColor || "blue"} />
+                    <LinkList profileId={profile.id} links={profile.links} visible={profile.sectionVisibility?.links} editable={false} accent={preferences?.accentColor || "blue"} />
                 </div>
                 <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
                     Powered by Link-Nexo
