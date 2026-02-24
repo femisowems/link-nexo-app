@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus, Trash2, ExternalLink, Link2, Share2, PencilLine,
-    X, AlertTriangle, XCircle, AtSign, Loader2,
+    X, AlertTriangle, XCircle, AtSign, Loader2, LayoutGrid, Settings
 } from "lucide-react";
 import { createProfile, deleteProfile } from "@/app/actions";
-import Link from "next/link";
+
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { parseLocation } from "@/lib/utils";
 
@@ -228,9 +228,85 @@ function DeleteConfirmModal({
     );
 }
 
+// ─── Edit Options Modal ────────────────────────────────────────────────────────
+function EditOptionsModal({ profile, onClose }: { profile: ProfileCardData; onClose: () => void }) {
+    const router = useRouter();
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-options-title"
+        >
+            <motion.div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+            />
+
+            <motion.div
+                className="relative bg-background rounded-2xl border border-border shadow-2xl w-full max-w-sm p-6 space-y-5"
+                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } }}
+                exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.15 } }}
+            >
+                <button
+                    onClick={onClose}
+                    className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Close"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+
+                <div className="space-y-1">
+                    <h2 id="edit-options-title" className="text-lg font-semibold">Edit Profile</h2>
+                    <p className="text-sm text-muted-foreground">What would you like to edit for @{profile.handle}?</p>
+                </div>
+
+                <div className="grid gap-3">
+                    <button
+                        onClick={() => {
+                            router.push(`/admin?profileId=${profile.id}`);
+                            onClose();
+                        }}
+                        className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-primary/50 transition-all text-left group"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                            <LayoutGrid className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-sm">Edit Content</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Manage links, socials, and design</p>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            router.push(`/admin/profiles/${profile.id}/edit`);
+                            onClose();
+                        }}
+                        className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-emerald-500/50 transition-all text-left group"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                            <Settings className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-sm">Edit Profile Details</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Change handle, bio, and avatar</p>
+                        </div>
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
 // ─── Profile Card ──────────────────────────────────────────────────────────────
 
-function ProfileCard({ profile, onDeleteClick }: { profile: ProfileCardData; onDeleteClick: (p: ProfileCardData) => void }) {
+function ProfileCard({ profile, onDeleteClick, onEditClick }: { profile: ProfileCardData; onDeleteClick: (p: ProfileCardData) => void; onEditClick: (p: ProfileCardData) => void }) {
     const visibleLinks = profile.links.filter((l) => l.visible).length;
     const totalLinks = profile.links.length;
     const visibleSocials = profile.socials.filter((s) => s.visible).length;
@@ -275,12 +351,12 @@ function ProfileCard({ profile, onDeleteClick }: { profile: ProfileCardData; onD
 
             {/* Action buttons */}
             <div className="border-t flex divide-x divide-border">
-                <Link
-                    href={`/admin/profiles/${profile.id}/edit`}
+                <button
+                    onClick={() => onEditClick(profile)}
                     className="flex-1 inline-flex items-center justify-center gap-2 text-xs font-medium py-4 px-3 hover:bg-muted/40 transition-colors whitespace-nowrap"
                 >
                     <PencilLine className="w-3.5 h-3.5" /> Edit
-                </Link>
+                </button>
                 <a
                     href={`/${profile.handle}`}
                     target="_blank"
@@ -312,6 +388,7 @@ export function ProfilesClient({
 }) {
     const [showCreate, setShowCreate] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<ProfileCardData | null>(null);
+    const [editTarget, setEditTarget] = useState<ProfileCardData | null>(null);
 
     return (
         <>
@@ -353,7 +430,7 @@ export function ProfilesClient({
                     <>
                         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 max-w-5xl">
                             {initialProfiles.map((profile) => (
-                                <ProfileCard key={profile.id} profile={profile} onDeleteClick={setDeleteTarget} />
+                                <ProfileCard key={profile.id} profile={profile} onDeleteClick={setDeleteTarget} onEditClick={setEditTarget} />
                             ))}
 
                             {/* Add another card */}
@@ -378,6 +455,7 @@ export function ProfilesClient({
             <AnimatePresence>
                 {showCreate && <CreateProfileModal onClose={() => setShowCreate(false)} />}
                 {deleteTarget && <DeleteConfirmModal profile={deleteTarget} onClose={() => setDeleteTarget(null)} />}
+                {editTarget && <EditOptionsModal profile={editTarget} onClose={() => setEditTarget(null)} />}
             </AnimatePresence>
         </>
     );
