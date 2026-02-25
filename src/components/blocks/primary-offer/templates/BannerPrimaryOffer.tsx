@@ -106,17 +106,17 @@ export function BannerPrimaryOffer({
                 {/* Right Action */}
                 {ctaLabel && (
                     <div className="w-full sm:w-auto relative z-20 mt-2 sm:mt-0 flex-shrink-0">
-                        <button
+                        <a
+                            href={href}
                             className={cn(
                                 "flex items-center justify-center gap-1.5 w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-[12px] shadow-sm transition-transform active:scale-[0.98] outline-none",
                                 styles.cta,
                                 styles.focus
                             )}
-                            onClick={() => { }} // No-op
                             tabIndex={-1}
                         >
                             {ctaLabel}
-                        </button>
+                        </a>
                     </div>
                 )}
             </div>

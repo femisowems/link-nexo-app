@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Profile } from "@/types";
-import { CheckCircle2, MapPin, Eye, EyeOff, Edit2, Check } from "lucide-react";
+import { CheckCircle2, MapPin, Eye, EyeOff, Edit2, Check, Share2 } from "lucide-react";
 import { COUNTRIES } from "@/lib/countries";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import { ProfileShareModal } from "./ProfileShareModal";
 
 interface ProfileHeaderProps {
     profile: Profile;
@@ -18,6 +19,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps) {
     const [isVisible, setIsVisible] = useState(profile.sectionVisibility?.profile ?? true);
     const [isEditable, setIsEditable] = useState(false); // Local edit mode toggle, governed by prop
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     // Restore profile state
     const [name, setName] = useState(profile.name);
@@ -138,15 +140,29 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="relative mt-8"
             >
-                <div className="rounded-full overflow-hidden border-4 border-background shadow-lg w-24 h-24 sm:w-28 sm:h-28 relative bg-muted">
-                    <Image
-                        src={profile.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${profile.handle}`}
-                        alt={name || "Profile"}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="(max-width: 768px) 96px, 112px"
-                    />
+                <div className="relative">
+                    <div className="rounded-full overflow-hidden border-4 border-background shadow-lg w-24 h-24 sm:w-28 sm:h-28 bg-muted relative">
+                        <Image
+                            src={profile.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${profile.handle}`}
+                            alt={name || "Profile"}
+                            fill
+                            className="object-cover"
+                            priority
+                            sizes="(max-width: 768px) 96px, 112px"
+                        />
+                    </div>
+
+                    {/* Public Share Button */}
+                    {!isEditable && !editable && (
+                        <button
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="absolute -top-1 -right-1 p-2 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 shadow border border-slate-100 dark:border-slate-700 transition-all hover:-translate-y-0.5 z-10"
+                            aria-label="Share profile"
+                            title="Share profile"
+                        >
+                            <Share2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </motion.div>
 
@@ -224,6 +240,13 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                     )}
                 </div>
             </motion.div>
+
+            <ProfileShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                profileHandle={profile.handle || ""}
+                profileAvatar={profile.avatarUrl}
+            />
         </div>
     );
 }

@@ -7,6 +7,7 @@ import { parseLocation } from "@/lib/utils";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SocialRow } from "@/components/profile/SocialRow";
 import { LinkList } from "@/components/links/LinkList";
+import { ProfileViewModeWrapper } from "@/components/profile/ProfileViewModeWrapper";
 import { LinkItem } from "@/types";
 import type { Metadata } from "next";
 
@@ -133,16 +134,18 @@ export default async function ProfilePage({ params }: Props) {
             data-accent={preferences?.accentColor || "blue"}
             data-link-style={preferences?.linkStyle || "rounded"}
         >
-            <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
-                <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
-                    <ProfileHeader profile={profile} editable={false} />
-                    <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
-                    <LinkList profileId={profile.id} links={profile.links} visible={profile.sectionVisibility?.links} editable={false} accent={preferences?.accentColor || "blue"} />
-                </div>
-                <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
-                    Powered by Link-Nexo
-                </div>
-            </main>
+            <ProfileViewModeWrapper profile={profile}>
+                <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
+                    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+                        <ProfileHeader profile={profile} editable={false} />
+                        <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
+                        <LinkList profileId={profile.id} links={profile.links} visible={profile.sectionVisibility?.links} editable={false} accent={preferences?.accentColor || "blue"} />
+                    </div>
+                    <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
+                        Powered by Link-Nexo
+                    </div>
+                </main>
+            </ProfileViewModeWrapper>
         </div>
     );
 }

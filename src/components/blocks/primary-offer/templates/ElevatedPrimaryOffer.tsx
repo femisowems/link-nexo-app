@@ -113,18 +113,18 @@ export function ElevatedPrimaryOffer({
                 {/* Bottom Section: Full-width Button */}
                 {ctaLabel && (
                     <div className="w-full relative z-20 mt-1">
-                        <button
+                        <a
+                            href={href}
                             className={cn(
                                 "flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-[13px] shadow-sm transition-transform active:scale-[0.98] outline-none",
                                 styles.cta,
                                 styles.focus
                             )}
-                            onClick={() => { }} // No-op
                             tabIndex={-1}
                         >
                             {ctaLabel}
                             <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        </a>
                     </div>
                 )}
             </div>

@@ -118,18 +118,18 @@ export function SplitPrimaryOffer({
                     "p-4 flex items-center justify-center sm:w-[140px] sm:min-w-[140px] flex-shrink-0",
                     styles.bg
                 )}>
-                    <button
+                    <a
+                        href={href}
                         className={cn(
                             "flex items-center justify-center gap-1.5 w-full px-3 py-2.5 rounded-lg font-semibold text-[13px] shadow-sm transition-transform active:scale-[0.98] outline-none",
                             styles.cta,
                             styles.focus
                         )}
-                        onClick={() => { }} // No-op
                         tabIndex={-1}
                     >
                         {ctaLabel || "View"}
                         <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </a>
                 </div>
             </div>
         </motion.div>

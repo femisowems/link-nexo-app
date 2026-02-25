@@ -114,19 +114,19 @@ export function MinimalPrimaryOffer({
                 {/* Bottom Section: Full-width Button */}
                 {ctaLabel && (
                     <div className="w-full relative z-20 mt-0.5">
-                        <button
+                        <a
+                            href={href}
                             className={cn(
                                 "flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl font-semibold text-[13px] transition-transform active:scale-[0.98] outline-none",
                                 styles.bg,
                                 styles.text,
                                 styles.focus
                             )}
-                            onClick={() => { }} // No-op
                             tabIndex={-1}
                         >
                             {ctaLabel}
                             <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        </a>
                     </div>
                 )}
             </div>

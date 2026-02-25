@@ -19,14 +19,24 @@ interface LinkCardProps {
     autoFocusTitle?: boolean;
 }
 
-
-
 export function LinkCard({ link, editable = false, dragHandle, onToggleVisibility, onDelete, autoFocusTitle = false }: LinkCardProps) {
     const [localIconId, setLocalIconId] = useState<string>(link.icon || "website");
     const IconRecord = AVAILABLE_ICONS.find(i => i.id === localIconId);
     const Icon = IconRecord ? IconRecord.icon : Globe;
     const isFeatured = link.variant === "featured";
     const isVisible = link.visible !== false; // Default to true
+
+    const getFeaturedCardClass = (color: string) => {
+        switch (color) {
+            case "#7FEFBD": return "bg-[#7FEFBD] text-slate-900 shadow-lg hover:shadow-xl hover:bg-[#6be0ae]";
+            case "#000000": return "bg-[#000000] text-white shadow-lg hover:shadow-xl hover:bg-[#222222]";
+            case "#89023E":
+            case "blue":
+            case "default":
+            case "":
+            default: return "bg-[#89023E] text-white shadow-lg hover:shadow-xl hover:bg-[#730132]";
+        }
+    };
 
     const [title, setTitle] = useState(link.title);
     const [subtitle, setSubtitle] = useState(link.subtitle || "");
@@ -91,7 +101,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
             className={cn(
                 "group relative flex flex-col w-full p-4 rounded-2xl transition-all outline-none cursor-pointer", // removed mb-3 as it's now in wrapper
                 isFeatured
-                    ? "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:bg-primary/95"
+                    ? (editable ? "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:bg-primary/95" : getFeaturedCardClass(accent))
                     : "bg-card text-card-foreground border border-border shadow-sm hover:shadow-md hover:border-black/50 hover:bg-muted/30",
                 editable && "pl-10", // Make space for drag handle
                 !isVisible && editable && "opacity-50 grayscale" // Dim if hidden
@@ -167,7 +177,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                         disabled={!editable}
                         className={cn(
                             "flex-shrink-0 mr-4 p-2 rounded-xl transition-all outline-none",
-                            isFeatured ? "bg-white/10" : "bg-muted text-foreground",
+                            isFeatured ? (editable ? "bg-white/10" : "bg-white/20") : "bg-muted text-foreground",
                             editable ? "hover:scale-105 hover:ring-2 hover:ring-primary/40 cursor-pointer" : "cursor-default"
                         )}
                         title={editable ? "Change Icon" : undefined}
@@ -180,7 +190,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                 <div className="flex-grow min-w-0 flex flex-col items-start text-left">
                     <div className={cn(
                         "font-semibold text-base sm:text-lg leading-tight w-full pr-8",
-                        isFeatured ? "text-primary-foreground" : "text-foreground"
+                        isFeatured ? (editable ? "text-primary-foreground" : (accent === '#7FEFBD' ? "text-slate-900" : "text-white")) : "text-foreground"
                     )}>
                         <InlineEdit
                             value={title}
@@ -194,7 +204,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
 
                     <div className={cn(
                         "text-xs sm:text-sm mt-0.5 w-full opacity-90 pr-8",
-                        isFeatured ? "text-primary-foreground/80" : "text-muted-foreground"
+                        isFeatured ? (editable ? "text-primary-foreground/80" : (accent === '#7FEFBD' ? "text-slate-900/80" : "text-white/80")) : "text-muted-foreground"
                     )}>
                         <InlineEdit
                             value={subtitle}
@@ -211,7 +221,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                     <div className={cn(
                         "ml-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-10px] group-hover:translate-x-0 absolute right-4 top-4"
                     )}>
-                        <ExternalLink className={cn("w-4 h-4", isFeatured ? "text-primary-foreground" : "text-muted-foreground")} />
+                        <ExternalLink className={cn("w-4 h-4", isFeatured ? (editable ? "text-primary-foreground" : (accent === '#7FEFBD' ? 'text-slate-900' : 'text-white')) : "text-muted-foreground")} />
                     </div>
                 )}
             </div>
@@ -292,16 +302,20 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                         </div>
 
                         {/* Accent Color Picker */}
-                        {variant === "primaryOffer" && (
+                        {(variant === "primaryOffer" || variant === "featured") && (
                             <div className="flex items-center gap-1.5 ml-0 sm:ml-2">
-                                {[
+                                {(variant === "primaryOffer" ? [
                                     { id: "blue", bg: "bg-blue-500" },
                                     { id: "violet", bg: "bg-violet-500" },
                                     { id: "rose", bg: "bg-rose-500" },
                                     { id: "amber", bg: "bg-amber-500" },
                                     { id: "emerald", bg: "bg-emerald-500" },
                                     { id: "slate", bg: "bg-slate-500" },
-                                ].map((color) => (
+                                ] : [
+                                    { id: "#89023E", bg: "bg-[#89023E]" },
+                                    { id: "#7FEFBD", bg: "bg-[#7FEFBD]" },
+                                    { id: "#000000", bg: "bg-[#000000]" },
+                                ]).map((color) => (
                                     <button
                                         key={color.id}
                                         type="button"
