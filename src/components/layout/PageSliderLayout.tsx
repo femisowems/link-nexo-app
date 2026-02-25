@@ -1,6 +1,7 @@
 "use client";
-import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Twitter, Youtube, Instagram, Mail, Globe, Calendar, Star, Copy, QrCode, Share } from "lucide-react";
+import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Twitter, Youtube, Instagram, Mail, Globe, Calendar, Star, Copy, QrCode, Share, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
+import QRCode from "react-qr-code";
 
 interface PageSliderLayoutProps {
     profile: any;
@@ -23,6 +24,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
 
     const [copied, setCopied] = useState(false);
     const [profileUrl, setProfileUrl] = useState("");
+    const [showQrCode, setShowQrCode] = useState(false);
 
     useEffect(() => {
         setProfileUrl(window.location.origin + '/' + handle);
@@ -325,47 +327,74 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                     )}
 
                     {/* Share Profile Card */}
-                    <div className="mt-12 w-full max-w-md bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex flex-col items-center gap-6">
-                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-sm">
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt={name || handle} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                                    <span className="text-2xl font-bold text-slate-400">{(name || handle || "U")[0].toUpperCase()}</span>
+                    <div className={`mt-12 w-full max-w-md bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex flex-col items-center transition-all duration-300 ${showQrCode ? 'py-8' : 'gap-6'}`}>
+                        {showQrCode ? (
+                            <div className="flex flex-col items-center animate-in fade-in slide-in-from-right-4 duration-300 w-full">
+                                <h3 className="text-xl font-bold text-slate-900 mb-8">Scan to Connect</h3>
+
+                                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 mb-8 max-w-[240px] w-full mx-auto">
+                                    {profileUrl && (
+                                        <QRCode
+                                            value={profileUrl}
+                                            size={200}
+                                            style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                            viewBox={`0 0 256 256`}
+                                        />
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        <div className="w-full relative">
-                            <input
-                                type="text"
-                                readOnly
-                                value={profileUrl}
-                                className="w-full bg-slate-50 border border-slate-200 text-slate-600 rounded-xl py-3 pl-4 pr-12 text-sm font-medium focus:outline-none"
-                            />
-                            <button
-                                onClick={copyToClipboard}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-500"
-                                aria-label="Copy to clipboard"
-                            >
-                                {copied ? <span className="text-xs font-bold text-emerald-600">Copied!</span> : <Copy size={16} />}
-                            </button>
-                        </div>
+                                <button
+                                    onClick={() => setShowQrCode(false)}
+                                    className="w-full bg-[#1c1d25] text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 hover:bg-[#2a2c38] transition-colors shadow-sm text-[15px]"
+                                >
+                                    <ArrowLeft className="w-4 h-4" /> Back to Options
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-6 w-full animate-in fade-in slide-in-from-left-4 duration-300">
+                                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-sm">
+                                    {avatarUrl ? (
+                                        <img src={avatarUrl} alt={name || handle} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                                            <span className="text-2xl font-bold text-slate-400">{(name || handle || "U")[0].toUpperCase()}</span>
+                                        </div>
+                                    )}
+                                </div>
 
-                        <div className="flex flex-col gap-3 w-full">
-                            <button
-                                onClick={() => alert("QR Code generation coming soon!")}
-                                className="w-full bg-slate-900 text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-md"
-                            >
-                                View QR Code <QrCode size={18} />
-                            </button>
-                            <button
-                                onClick={handleShare}
-                                className="w-full bg-blue-600 text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-md lg:hidden"
-                            >
-                                Share <Share size={18} />
-                            </button>
-                        </div>
+                                <div className="w-full relative">
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        value={profileUrl}
+                                        className="w-full bg-slate-50 border border-slate-200 text-slate-600 rounded-xl py-3 pl-4 pr-12 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    />
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-500"
+                                        aria-label="Copy to clipboard"
+                                        title="Copy link"
+                                    >
+                                        {copied ? <span className="text-xs font-bold text-emerald-600">Copied!</span> : <Copy size={16} />}
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col gap-3 w-full">
+                                    <button
+                                        onClick={() => setShowQrCode(true)}
+                                        className="w-full bg-[#1c1d25] text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 hover:bg-[#2a2c38] transition-colors shadow-sm text-[15px]"
+                                    >
+                                        View QR Code <QrCode size={18} />
+                                    </button>
+                                    <button
+                                        onClick={handleShare}
+                                        className="w-full bg-[#2a7ce4] text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 hover:bg-[#2068c5] transition-colors shadow-sm lg:hidden text-[15px]"
+                                    >
+                                        Share <Share size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <a
