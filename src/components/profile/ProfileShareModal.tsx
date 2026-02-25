@@ -2,7 +2,7 @@
 
 import { X, Copy, QrCode, Share2, Check, ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import QRCode from "react-qr-code";
 import { useToast } from "@/components/ui/Toast";
 
@@ -25,6 +25,11 @@ export function ProfileShareModal({ isOpen, onClose, profileHandle, profileAvata
         }
     }, [profileHandle]);
 
+    const handleClose = useCallback(() => {
+        onClose();
+        setTimeout(() => setShowQrCode(false), 200); // Reset state after close animation
+    }, [onClose]);
+
     // Handle ESC key press
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,12 +39,7 @@ export function ProfileShareModal({ isOpen, onClose, profileHandle, profileAvata
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
-
-    const handleClose = () => {
-        onClose();
-        setTimeout(() => setShowQrCode(false), 200); // Reset state after close animation
-    };
+    }, [isOpen, handleClose]);
 
     if (!isOpen) return null;
 

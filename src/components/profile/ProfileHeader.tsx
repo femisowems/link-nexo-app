@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Profile } from "@/types";
 import { CheckCircle2, MapPin, Eye, EyeOff, Edit2, Check, Share2 } from "lucide-react";
 import { COUNTRIES } from "@/lib/countries";

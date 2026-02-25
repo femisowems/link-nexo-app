@@ -1,10 +1,34 @@
 "use client";
-import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Twitter, Youtube, Instagram, Mail, Globe, Calendar, Star, Copy, QrCode, Share, ArrowLeft } from "lucide-react";
+import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Twitter, Youtube, Instagram, Mail, Globe, Star, Copy, QrCode, Share, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
+import Image from "next/image";
 
 interface PageSliderLayoutProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any;
+}
+
+interface LayoutLink {
+    id?: string;
+    variant?: string;
+    title?: string;
+    subtitle?: string;
+    href?: string;
+    accent?: string;
+    badge?: string;
+    openInNewTab?: boolean;
+    image?: string;
+    price?: string;
+    originalPrice?: string;
+    rating?: string;
+    ctaLabel?: string;
+}
+
+interface LayoutSocial {
+    id?: string;
+    platform: string;
+    url?: string;
 }
 
 const SocialIcon = ({ platform }: { platform: string }) => {
@@ -56,17 +80,17 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
     // Separate items into categories based on LinkItem variants
     // Map "featured" to highlight sections, and "primaryOffer" to dark sections.
     // We'll also fall back gracefully.
-    const featuredCards = links?.filter((item: any) => item.variant === "featured") || [];
-    const darkCards = links?.filter((item: any) => item.variant === "primaryOffer") || [];
-    const mainLinks = links?.filter((item: any) => item.variant === "default" || !item.variant) || [];
+    const featuredCards = links?.filter((item: LayoutLink) => item.variant === "featured") || [];
+    const darkCards = links?.filter((item: LayoutLink) => item.variant === "primaryOffer") || [];
+    const mainLinks = links?.filter((item: LayoutLink) => item.variant === "default" || !item.variant) || [];
 
     return (
         <div className="fixed inset-0 h-screen w-full overflow-y-auto snap-y snap-mandatory bg-slate-50 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-40">
             {/* 1. Profile Header Section */}
             <section id="profile" className="h-screen w-full snap-start flex flex-col items-center justify-center p-6 bg-slate-50 relative">
-                <div className="w-40 h-40 rounded-full bg-slate-200 mb-6 overflow-hidden border-4 border-white shadow-xl flex items-center justify-center">
+                <div className="w-40 h-40 rounded-full bg-slate-200 mb-6 overflow-hidden border-4 border-white shadow-xl flex items-center justify-center relative">
                     {avatarUrl ? (
-                        <img src={avatarUrl} alt={name || handle} className="w-full h-full object-cover" />
+                        <Image src={avatarUrl} alt={name || handle || "Avatar"} fill className="object-cover" />
                     ) : (
                         <span className="text-4xl font-bold text-slate-400">{(name || handle || "U")[0].toUpperCase()}</span>
                     )}
@@ -76,7 +100,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                 {location && (
                     <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-4">
                         <MapPin size={16} />
-                        <span>{location}</span>
+                        <span>{typeof location === 'string' ? location : (location?.address || location?.city || location?.country || '')}</span>
                     </div>
                 )}
 
@@ -85,7 +109,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                 {/* Social Icons Layout - Hero */}
                 {socials && socials.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-3 mb-12">
-                        {socials.map((social: any) => (
+                        {socials.map((social: LayoutSocial) => (
                             <a
                                 key={social.id}
                                 href={social.url}
@@ -110,8 +134,8 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
             </section>
 
             {/* 2. Featured Card Section */}
-            {featuredCards.map((item: any, index: number) => {
-                let accent = item.accent || "#89023E";
+            {featuredCards.map((item: LayoutLink, index: number) => {
+                let accent: string = item.accent || "#89023E";
                 if (!["#89023E", "#7FEFBD", "#000000"].includes(accent)) {
                     accent = "#89023E";
                 }
@@ -187,7 +211,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                     <div className="max-w-xl w-full flex flex-col items-center relative z-10 w-full overflow-y-auto max-h-screen py-20 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         <h2 className="text-3xl font-bold mb-10 text-slate-900 border-b-2 border-slate-200 pb-2">Explore My Ecosystem</h2>
                         <div className="flex flex-col gap-4 w-full pb-8">
-                            {mainLinks.map((item: any, index: number) => (
+                            {mainLinks.map((item: LayoutLink, index: number) => (
                                 <a
                                     key={`link-${item.id || index}`}
                                     href={item.href}
@@ -220,7 +244,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
             )}
 
             {/* 4. Dark/Primary Offer Section */}
-            {darkCards.map((item: any, index: number) => {
+            {darkCards.map((item: LayoutLink, index: number) => {
                 const accent = item.accent || "slate";
                 const isDynamicHex = accent.startsWith("#");
 
@@ -300,14 +324,14 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                 <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-pink-100/50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
                 <div className="w-full max-w-4xl mx-auto flex flex-col items-center z-10 relative">
-                    <h2 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900">Let's Connect</h2>
+                    <h2 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900">Let&apos;s Connect</h2>
                     <p className="text-slate-600 mb-12 text-center max-w-lg font-medium text-lg leading-relaxed">
                         Thank you for visiting my digital space. Reach out on any of the platforms below to collaborate, chat, or just say hello.
                     </p>
 
                     {socials && socials.length > 0 && (
                         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 w-full max-w-3xl">
-                            {socials.map((social: any) => (
+                            {socials.map((social: LayoutSocial) => (
                                 <a
                                     key={social.id}
                                     href={social.url}

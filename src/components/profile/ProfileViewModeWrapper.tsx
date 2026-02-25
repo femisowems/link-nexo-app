@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { MonitorSmartphone, LayoutGrid } from "lucide-react";
 import { PageSliderLayout } from "@/components/layout/PageSliderLayout";
+import { Profile } from "@/types";
 
 interface ProfileViewModeWrapperProps {
     children: React.ReactNode;
-    profile: any;
+    profile: Profile;
 }
 
 export function ProfileViewModeWrapper({ children, profile }: ProfileViewModeWrapperProps) {
