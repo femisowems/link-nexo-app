@@ -94,12 +94,24 @@ export function ProfileShareModal({ isOpen, onClose, profileHandle, profileAvata
 
                         <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 mb-8 max-w-full">
                             {profileUrl && (
-                                <QRCode
-                                    value={profileUrl}
-                                    size={200}
-                                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                                    viewBox={`0 0 256 256`}
-                                />
+                                <div className="relative flex items-center justify-center">
+                                    <QRCode
+                                        value={profileUrl}
+                                        size={200}
+                                        level="H"
+                                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                        viewBox={`0 0 256 256`}
+                                    />
+                                    <div className="absolute w-12 h-12 rounded-full overflow-hidden border-[3px] border-white shadow-[0_0_10px_rgba(0,0,0,0.1)] bg-white flex items-center justify-center z-10">
+                                        {profileAvatar ? (
+                                            <Image src={profileAvatar} alt={profileHandle} fill className="object-cover" />
+                                        ) : (
+                                            <span className="text-lg font-bold text-slate-400">
+                                                {profileHandle.charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             )}
                         </div>
 
