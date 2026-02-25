@@ -1,5 +1,6 @@
 "use client";
-import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Twitter, Youtube, Instagram, Mail, Globe, Star, Copy, QrCode, Share, ArrowLeft } from "lucide-react";
+import { ArrowDown, ArrowUp, LinkIcon, MapPin, Github, Linkedin, Youtube, Instagram, Mail, Globe, Star, Copy, QrCode, Share, ArrowLeft } from "lucide-react";
+import { XBrandIcon } from "@/components/icons/XBrandIcon";
 import { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 import Image from "next/image";
@@ -35,7 +36,7 @@ const SocialIcon = ({ platform }: { platform: string }) => {
     switch (platform.toLowerCase()) {
         case 'github': return <Github size={20} />;
         case 'linkedin': return <Linkedin size={20} />;
-        case 'twitter': return <Twitter size={20} />;
+        case 'twitter': return <XBrandIcon size={20} />;
         case 'youtube': return <Youtube size={20} />;
         case 'instagram': return <Instagram size={20} />;
         case 'email': return <Mail size={20} />;

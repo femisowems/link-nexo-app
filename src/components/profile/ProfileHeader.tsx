@@ -10,6 +10,7 @@ import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import { ProfileShareModal } from "./ProfileShareModal";
+import { updateProfile } from "@/app/actions";
 
 interface ProfileHeaderProps {
     profile: Profile;
@@ -37,23 +38,36 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
 
     const { showToast } = useToast();
 
-    // Mock save handler
+    // Save handler - persists to DB via server action
     const handleSave = async (field: string, value: string, setter: (val: string) => void) => {
         const previousValue = field === "name" ? name : field === "bio" ? bio : displayLocation;
+        setter(value); // Optimistic update
 
-        // Simulate network request
-        await new Promise(resolve => setTimeout(resolve, 600));
-        setter(value);
-
-        showToast("Saved", {
-            onUndo: () => {
-                setter(previousValue);
-                if (field === "location") {
-                    setCity(initialCity);
-                    setCountry(initialCountry);
+        try {
+            await updateProfile({
+                name: field === "name" ? value : name,
+                bio: field === "bio" ? value : bio,
+                location: field === "location" ? value : displayLocation,
+            });
+            showToast("Saved", {
+                onUndo: () => {
+                    setter(previousValue);
+                    if (field === "location") {
+                        setCity(initialCity);
+                        setCountry(initialCountry);
+                    }
+                    // Revert in DB
+                    updateProfile({
+                        name: field === "name" ? previousValue : name,
+                        bio: field === "bio" ? previousValue : bio,
+                        location: field === "location" ? previousValue : displayLocation,
+                    });
                 }
-            }
-        });
+            });
+        } catch {
+            setter(previousValue); // Revert on error
+            showToast("Failed to save. Please try again.");
+        }
     };
 
     const handleLocationChange = (newCity: string, newCountry: string) => {

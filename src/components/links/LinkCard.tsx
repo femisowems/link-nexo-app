@@ -1,7 +1,7 @@
 import { LinkItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check } from "lucide-react";
+import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check, CopyPlus } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useState, useTransition } from "react";
@@ -16,10 +16,11 @@ interface LinkCardProps {
     dragHandle?: React.ReactNode;
     onToggleVisibility?: (id: string) => void;
     onDelete?: (id: string) => void;
+    onDuplicate?: (id: string) => void;
     autoFocusTitle?: boolean;
 }
 
-export function LinkCard({ link, editable = false, dragHandle, onToggleVisibility, onDelete, autoFocusTitle = false }: LinkCardProps) {
+export function LinkCard({ link, editable = false, dragHandle, onToggleVisibility, onDelete, onDuplicate, autoFocusTitle = false }: LinkCardProps) {
     const [localIconId, setLocalIconId] = useState<string>(link.icon || "website");
     const IconRecord = AVAILABLE_ICONS.find(i => i.id === localIconId);
     const Icon = IconRecord ? IconRecord.icon : Globe;
@@ -117,7 +118,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
 
             {/* Actions (Editable Mode Only) */}
             {editable && (
-                <div className="absolute right-2 top-2 flex items-center gap-1 z-20">
+                <div className="absolute right-2 top-2 flex flex-col items-center gap-1 z-20">
                     {/* Visibility Toggle */}
                     {onToggleVisibility && (
                         <button
@@ -132,6 +133,21 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                         </button>
                     )}
 
+                    {/* Duplicate Button */}
+                    {onDuplicate && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDuplicate(link.id);
+                            }}
+                            className="p-1.5 rounded-full hover:bg-black/10 text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Duplicate link"
+                            title="Duplicate"
+                        >
+                            <CopyPlus className="w-4 h-4" />
+                        </button>
+                    )}
+
                     {/* Delete Toggle */}
                     {onDelete && (
                         <button
@@ -143,7 +159,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                     setConfirmDelete(true);
                                 }
                             }}
-                            onBlur={() => setTimeout(() => setConfirmDelete(false), 200)} // Delay to allow click to register
+                            onBlur={() => setTimeout(() => setConfirmDelete(false), 200)}
                             className={cn(
                                 "p-1.5 rounded-full transition-colors flex items-center gap-1",
                                 confirmDelete

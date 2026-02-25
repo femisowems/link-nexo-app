@@ -11,10 +11,11 @@ interface SortableLinkProps {
     editable: boolean;
     onToggleVisibility: (id: string) => void;
     onDelete: (id: string) => void;
+    onDuplicate: (id: string) => void;
     autoFocusTitle?: boolean;
 }
 
-export function SortableLink({ link, editable, onToggleVisibility, onDelete, autoFocusTitle }: SortableLinkProps) {
+export function SortableLink({ link, editable, onToggleVisibility, onDelete, onDuplicate, autoFocusTitle }: SortableLinkProps) {
     const {
         attributes,
         listeners,
@@ -53,6 +54,7 @@ export function SortableLink({ link, editable, onToggleVisibility, onDelete, aut
                 dragHandle={DragHandle}
                 onToggleVisibility={onToggleVisibility}
                 onDelete={onDelete}
+                onDuplicate={onDuplicate}
                 autoFocusTitle={autoFocusTitle}
             />
         </div>

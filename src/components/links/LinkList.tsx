@@ -25,7 +25,7 @@ import { useState, useOptimistic, useTransition } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import { addLink, deleteLink, reorderLinks, updateLink } from "@/app/actions";
+import { addLink, deleteLink, reorderLinks, updateLink, duplicateLink } from "@/app/actions";
 
 interface LinkListProps {
     links: LinkItem[];
@@ -118,6 +118,13 @@ export function LinkList({ links: initialLinks, profileId, visible = true, edita
         });
     };
 
+    const handleDuplicateLink = (id: string) => {
+        startTransition(async () => {
+            await duplicateLink(id);
+            showToast("Link duplicated");
+        });
+    };
+
 
     let primary: LinkItem | undefined;
     const sortableItems: LinkItem[] = [];
@@ -152,6 +159,7 @@ export function LinkList({ links: initialLinks, profileId, visible = true, edita
                                 editable={true}
                                 onToggleVisibility={handleToggleVisibility}
                                 onDelete={handleDeleteLink}
+                                onDuplicate={handleDuplicateLink}
                             // We explicitly do NOT pass a drag handle here, meaning the item is pinned 📌
                             />
                         </div>
@@ -203,6 +211,7 @@ export function LinkList({ links: initialLinks, profileId, visible = true, edita
                                     editable={isEditable}
                                     onToggleVisibility={handleToggleVisibility}
                                     onDelete={handleDeleteLink}
+                                    onDuplicate={handleDuplicateLink}
                                 />
                             ))}
                         </ul>

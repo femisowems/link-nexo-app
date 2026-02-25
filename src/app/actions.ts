@@ -6,8 +6,56 @@ import { db } from "@/db";
 import { links, profiles, users, socials } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
 
 import { mockData } from "@/data/mock-data";
+
+// --- Auth Actions ---
+
+const signUpSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters."),
+    email: z.string().email("Please enter a valid email address."),
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+});
+
+export async function signUpUser(formData: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}): Promise<{ success?: boolean; error?: string; fieldErrors?: Record<string, string> }> {
+    const parsed = signUpSchema.safeParse(formData);
+    if (!parsed.success) {
+        const fieldErrors: Record<string, string> = {};
+        for (const issue of parsed.error.issues) {
+            const field = issue.path[0] as string;
+            if (field) fieldErrors[field] = issue.message;
+        }
+        return { fieldErrors };
+    }
+
+    const { name, email, password } = parsed.data;
+
+    // Check for duplicate email
+    const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (existing) {
+        return { fieldErrors: { email: "An account with this email already exists." } };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await db.insert(users).values({
+        email,
+        password: hashedPassword,
+        name,
+    });
+
+    return { success: true };
+}
 
 // --- Profile Actions ---
 
@@ -175,6 +223,47 @@ export async function addLink(profileId: string) {
     revalidatePath("/admin");
     return { success: true, link: newLink[0] };
 }
+
+export async function duplicateLink(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    // Verify ownership and fetch original
+    const original = await db.query.links.findFirst({
+        where: eq(links.id, id),
+        with: { profile: true },
+    });
+
+    if (!original || original.profile.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    const duplicate = await db.insert(links).values({
+        profileId: original.profileId,
+        title: `${original.title} (Copy)`,
+        subtitle: original.subtitle,
+        href: original.href,
+        icon: original.icon,
+        variant: original.variant,
+        badge: original.badge,
+        layout: original.layout,
+        accent: original.accent,
+        template: original.template,
+        ctaLabel: original.ctaLabel,
+        price: original.price,
+        originalPrice: original.originalPrice,
+        rating: original.rating,
+        thumbnailUrl: original.thumbnailUrl,
+        analyticsEventName: original.analyticsEventName,
+        openInNewTab: original.openInNewTab,
+        visible: original.visible,
+        order: (original.order ?? 0) - 1,
+    }).returning();
+
+    revalidatePath("/admin");
+    return { success: true, link: duplicate[0] };
+}
+
 
 export async function updateLink(id: string, data: Partial<typeof links.$inferInsert>) {
     const session = await auth();

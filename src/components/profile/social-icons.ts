@@ -1,9 +1,10 @@
-import { Github, Linkedin, Twitter, Youtube, Mail, Instagram, Globe } from "lucide-react";
+import { Github, Linkedin, Youtube, Mail, Instagram, Globe } from "lucide-react";
+import { XBrandIcon } from "@/components/icons/XBrandIcon";
 
 export const iconMap = {
     github: Github,
     linkedin: Linkedin,
-    twitter: Twitter,
+    twitter: XBrandIcon,
     youtube: Youtube,
     email: Mail,
     instagram: Instagram,

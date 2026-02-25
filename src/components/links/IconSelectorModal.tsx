@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import {
-    Globe, Mail, Instagram, Twitch, Facebook, Twitter, Github, Linkedin,
+    Globe, Mail, Instagram, Twitch, Facebook, Github, Linkedin,
     Calendar, Youtube, Link as LinkIcon, Bookmark, Music, Video, MapPin,
-    Phone, ShoppingBag, Star, Heart, MessageCircle
+    Phone, ShoppingBag, Star, Heart, MessageCircle, X as XClose
 } from "lucide-react";
+import { XBrandIcon } from "@/components/icons/XBrandIcon";
 
 export const AVAILABLE_ICONS = [
     { id: "website", icon: Globe, label: "Website" },
@@ -12,7 +12,7 @@ export const AVAILABLE_ICONS = [
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "youtube", icon: Youtube, label: "YouTube" },
     { id: "github", icon: Github, label: "GitHub" },
-    { id: "twitter", icon: Twitter, label: "Twitter" },
+    { id: "twitter", icon: XBrandIcon, label: "X" },
     { id: "linkedin", icon: Linkedin, label: "LinkedIn" },
     { id: "instagram", icon: Instagram, label: "Instagram" },
     { id: "twitch", icon: Twitch, label: "Twitch" },
@@ -67,7 +67,7 @@ export function IconSelectorModal({
                         onClick={onClose}
                         className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <XClose className="w-5 h-5" />
                     </button>
                 </div>
 

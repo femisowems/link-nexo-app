@@ -25,17 +25,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const user = await db.query.users.findFirst({ where: eq(users.email, email) });
 
                 if (!user) {
-                    // For now, auto-create user on login for demo simplicity?
-                    // Or require manual signup flow.
-                    // Let's implement signup properly or auto-create.
-                    // Auto-signup for demo
-                    const hashedPassword = await bcrypt.hash(password, 10);
-                    const [newUser] = await db.insert(users).values({
-                        email,
-                        password: hashedPassword,
-                        name: email.split("@")[0],
-                    }).returning();
-                    return newUser;
+                    // No account found — reject login.
+                    // Accounts must be created via the /signup page.
+                    return null;
                 }
 
                 if (!user.password) return null; // OAuth user trying to use password?

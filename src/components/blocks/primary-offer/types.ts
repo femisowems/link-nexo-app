@@ -1,11 +1,11 @@
-import { LucideIcon } from "lucide-react";
+import React from "react";
 import { PrimaryOfferTemplate } from "@/types";
 
 export type PrimaryOfferCardProps = {
     title: string;
     description?: string;
     href: string;
-    icon?: LucideIcon;
+    icon?: React.ComponentType<{ size?: number; className?: string }>;
     ctaLabel?: string;
     price?: string;
     originalPrice?: string;
