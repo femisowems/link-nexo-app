@@ -51,12 +51,12 @@ export default function SignUpPage() {
             <div className="auth-bg" aria-hidden="true" />
             <div className="auth-card">
                 {/* Brand */}
-                <div className="auth-brand">
+                <Link href="/" className="auth-brand">
                     <div className="auth-logo">
                         <Link2 size={22} strokeWidth={2.5} />
                     </div>
                     <span className="auth-logo-name">Link Nexo</span>
-                </div>
+                </Link>
 
                 <div className="auth-header">
                     <h1 className="auth-title">Create your account</h1>
