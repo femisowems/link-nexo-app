@@ -368,7 +368,7 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                                             />
                                             <div className="absolute w-12 h-12 rounded-full overflow-hidden border-[3px] border-white shadow-[0_0_10px_rgba(0,0,0,0.1)] bg-white flex items-center justify-center z-10">
                                                 {avatarUrl ? (
-                                                    <img src={avatarUrl} alt={name || handle} className="w-full h-full object-cover" />
+                                                    <Image src={avatarUrl} alt={name || handle || "Avatar"} fill className="object-cover" />
                                                 ) : (
                                                     <span className="text-lg font-bold text-slate-400">
                                                         {(name || handle || "U")[0].toUpperCase()}
@@ -388,9 +388,9 @@ export function PageSliderLayout({ profile }: PageSliderLayoutProps) {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-6 w-full animate-in fade-in slide-in-from-left-4 duration-300">
-                                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-sm">
+                                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-sm relative">
                                     {avatarUrl ? (
-                                        <img src={avatarUrl} alt={name || handle} className="w-full h-full object-cover" />
+                                        <Image src={avatarUrl} alt={name || handle || "Avatar"} fill className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-slate-100 flex items-center justify-center">
                                             <span className="text-2xl font-bold text-slate-400">{(name || handle || "U")[0].toUpperCase()}</span>

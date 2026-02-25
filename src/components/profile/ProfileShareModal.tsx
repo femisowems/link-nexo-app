@@ -21,6 +21,7 @@ export function ProfileShareModal({ isOpen, onClose, profileHandle, profileAvata
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setProfileUrl(window.location.origin + '/' + profileHandle);
         }
     }, [profileHandle]);

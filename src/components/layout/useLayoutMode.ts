@@ -7,7 +7,7 @@ export function useLayoutMode() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
         if (typeof window !== "undefined") {
             const savedMode = localStorage.getItem("layout-mode") as LayoutMode;
