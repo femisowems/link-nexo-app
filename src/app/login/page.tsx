@@ -24,7 +24,8 @@ function LoginForm() {
         if (searchParams.get("reset") === "true") {
             showToast("Password updated! Please sign in with your new password.");
         }
-    }, [searchParams, showToast]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
