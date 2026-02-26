@@ -3,11 +3,12 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { links, profiles, users, socials } from "@/db/schema";
+import { links, profiles, users, socials, emailTokens } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 
 import { mockData } from "@/data/mock-data";
 
@@ -53,6 +54,110 @@ export async function signUpUser(formData: {
         password: hashedPassword,
         name,
     });
+
+    // Send verification email (non-blocking — don't fail signup if email fails)
+    try {
+        const verifyToken = crypto.randomUUID();
+        await db.insert(emailTokens).values({
+            type: "email_verification",
+            identifier: email,
+            token: verifyToken,
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        });
+        await sendVerificationEmail(email, verifyToken);
+    } catch (e) {
+        console.error("Failed to send verification email:", e);
+    }
+
+    return { success: true };
+}
+
+// --- Email Token Actions ---
+
+export async function requestPasswordReset(email: string) {
+    // Always return success to avoid leaking which emails are registered
+    const user = await db.query.users.findFirst({ where: eq(users.email, email.toLowerCase()) });
+    if (!user) return { success: true };
+
+    // Delete any existing reset tokens for this email
+    await db.delete(emailTokens)
+        .where(and(eq(emailTokens.identifier, email), eq(emailTokens.type, "password_reset")));
+
+    const token = crypto.randomUUID();
+    await db.insert(emailTokens).values({
+        type: "password_reset",
+        identifier: email,
+        token,
+        expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+    });
+
+    await sendPasswordResetEmail(email, token);
+    return { success: true };
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+    if (!token || newPassword.length < 8) {
+        return { error: "Invalid request." };
+    }
+
+    const record = await db.query.emailTokens.findFirst({
+        where: and(eq(emailTokens.token, token), eq(emailTokens.type, "password_reset")),
+    });
+
+    if (!record) return { error: "Invalid or expired reset link." };
+    if (record.expires < new Date()) {
+        await db.delete(emailTokens).where(eq(emailTokens.token, token));
+        return { error: "This reset link has expired. Please request a new one." };
+    }
+
+    const user = await db.query.users.findFirst({ where: eq(users.email, record.identifier) });
+    if (!user) return { error: "User not found." };
+
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await db.update(users).set({ password: hashed }).where(eq(users.id, user.id));
+    await db.delete(emailTokens).where(eq(emailTokens.token, token)); // single-use
+
+    return { success: true };
+}
+
+export async function sendVerificationEmailAction() {
+    const session = await auth();
+    if (!session?.user?.email) return { error: "Unauthorized" };
+
+    const email = session.user.email;
+
+    await db.delete(emailTokens)
+        .where(and(eq(emailTokens.identifier, email), eq(emailTokens.type, "email_verification")));
+
+    const token = crypto.randomUUID();
+    await db.insert(emailTokens).values({
+        type: "email_verification",
+        identifier: email,
+        token,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+
+    await sendVerificationEmail(email, token);
+    return { success: true };
+}
+
+export async function verifyEmail(token: string) {
+    if (!token) return { error: "Missing token." };
+
+    const record = await db.query.emailTokens.findFirst({
+        where: and(eq(emailTokens.token, token), eq(emailTokens.type, "email_verification")),
+    });
+
+    if (!record) return { error: "Invalid or already used verification link." };
+    if (record.expires < new Date()) {
+        await db.delete(emailTokens).where(eq(emailTokens.token, token));
+        return { error: "This verification link has expired. Please request a new one." };
+    }
+
+    await db.update(users)
+        .set({ emailVerified: new Date() })
+        .where(eq(users.email, record.identifier));
+    await db.delete(emailTokens).where(eq(emailTokens.token, token));
 
     return { success: true };
 }

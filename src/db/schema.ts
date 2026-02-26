@@ -10,6 +10,16 @@ import {
 import { type AdapterAccount } from "@auth/core/adapters";
 import { relations } from "drizzle-orm";
 
+// Token table for password reset & email verification (separate from NextAuth's verificationTokens)
+export const emailTokens = pgTable("email_tokens", {
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    type: text("type").notNull(), // "password_reset" | "email_verification"
+    identifier: text("identifier").notNull(), // email address
+    token: text("token").notNull().unique(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
+
 export const users = pgTable("user", {
     id: text("id")
         .primaryKey()

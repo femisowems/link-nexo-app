@@ -21,6 +21,9 @@ function LoginForm() {
         if (searchParams.get("registered") === "true") {
             showToast("Account created! Please sign in.");
         }
+        if (searchParams.get("reset") === "true") {
+            showToast("Password updated! Please sign in with your new password.");
+        }
     }, [searchParams, showToast]);
 
     const handleLogin = async (e: React.FormEvent) => {

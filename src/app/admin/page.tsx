@@ -1,7 +1,7 @@
 
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { profiles, links, socials } from "@/db/schema";
+import { profiles, links, socials, users } from "@/db/schema";
 import { mockData } from "@/data/mock-data";
 import { eq, desc } from "drizzle-orm";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
@@ -10,6 +10,7 @@ import { LinkList } from "@/components/links/LinkList";
 import { redirect } from "next/navigation";
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { parseLocation } from "@/lib/utils";
+import { UnverifiedEmailBanner } from "@/components/profile/UnverifiedEmailBanner";
 
 import { AlertCircle, UserPlus, AtSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -158,6 +159,9 @@ export default async function AdminPage({
     // Await search params for Next.js 15+
     const resolvedSearchParams = await searchParams;
 
+    // Fetch user to check emailVerified status
+    const dbUser = await db.query.users.findFirst({ where: eq(users.id, session.user.id!) });
+
     // Fetch all profiles to populate switcher
     const allProfiles = await db.query.profiles.findMany({
         where: eq(profiles.userId, session.user.id),
@@ -256,6 +260,8 @@ export default async function AdminPage({
 
     return (
         <div className="max-w-md mx-auto p-4 space-y-8 min-h-screen">
+            {/* Unverified email banner */}
+            {!dbUser?.emailVerified && <UnverifiedEmailBanner />}
             <div className="flex flex-col gap-4 bg-muted/20 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
                     <div>

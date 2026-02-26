@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Link2, Loader2, ArrowLeft, MailCheck } from "lucide-react";
+import { requestPasswordReset } from "@/app/actions";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -14,18 +15,15 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
         setError("");
         setIsLoading(true);
-
-        // TODO: wire to a real password-reset server action / email service
-        await new Promise((r) => setTimeout(r, 1000));
+        await requestPasswordReset(email.trim().toLowerCase());
         setIsLoading(false);
-        setSubmitted(true);
+        setSubmitted(true); // Always show success to avoid email enumeration
     };
 
     return (
         <div className="auth-root">
             <div className="auth-bg" aria-hidden="true" />
             <div className="auth-card">
-                {/* Brand */}
                 <Link href="/" className="auth-brand">
                     <div className="auth-logo">
                         <Link2 size={22} strokeWidth={2.5} />
@@ -34,7 +32,6 @@ export default function ForgotPasswordPage() {
                 </Link>
 
                 {submitted ? (
-                    /* Success state */
                     <div className="flex flex-col items-center text-center gap-4 py-4">
                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                             <MailCheck className="w-7 h-7 text-primary" />
