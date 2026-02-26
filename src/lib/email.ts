@@ -5,7 +5,7 @@ import { VerificationEmail } from "@/emails/VerificationEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = "Link Nexo <onboarding@resend.dev>";
+const FROM = "Link Nexo <noreply@email.starterdev.com>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export async function sendPasswordResetEmail(to: string, token: string) {
