@@ -9,15 +9,16 @@ import { verifyEmail } from "@/app/actions";
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
-    const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-    const [message, setMessage] = useState("");
+    const [status, setStatus] = useState<"loading" | "success" | "error">(
+        token ? "loading" : "error"
+    );
+    const [message, setMessage] = useState(
+        token ? "" : "Missing verification token. Please use the link from your email."
+    );
 
     useEffect(() => {
-        if (!token) {
-            setStatus("error");
-            setMessage("Missing verification token. Please use the link from your email.");
-            return;
-        }
+        if (!token) return;
+
         verifyEmail(token).then((result) => {
             if (result.error) {
                 setStatus("error");
