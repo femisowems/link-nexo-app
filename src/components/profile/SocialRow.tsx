@@ -28,7 +28,7 @@ import { addSocial, deleteSocial, updateSocial, reorderSocials, updateProfile } 
 interface SocialRowProps {
     socials: Social[];
     profileId: string;
-    profile: { sectionVisibility: any };
+    profile: { sectionVisibility: unknown };
     visible?: boolean;
     editable?: boolean;
 }
@@ -72,7 +72,7 @@ export function SocialRow({ socials: initialSocials, profileId, profile, visible
                 return newOrder;
             });
 
-            reorderSocials(newOrder.map((s, index) => ({ id: s.id, order: index }))).catch(e => {
+            reorderSocials(newOrder.map((s, index) => ({ id: s.id, order: index }))).catch(() => {
                 setSocials(oldSocials);
                 showToast("Failed to reorder socials.");
             });
@@ -89,7 +89,7 @@ export function SocialRow({ socials: initialSocials, profileId, profile, visible
         ));
 
         // Background update
-        updateSocial(id, updates).catch(e => {
+        updateSocial(id, updates).catch(() => {
             setSocials(oldSocials);
             showToast("Failed to update social.");
         });
@@ -110,7 +110,7 @@ export function SocialRow({ socials: initialSocials, profileId, profile, visible
     const handleDeleteSocial = (id: string) => {
         const oldSocials = [...socials];
         setSocials(current => current.filter(s => s.id !== id));
-        deleteSocial(id).catch(e => {
+        deleteSocial(id).catch(() => {
             setSocials(oldSocials);
             showToast("Failed to delete social.");
         });
@@ -135,7 +135,7 @@ export function SocialRow({ socials: initialSocials, profileId, profile, visible
                     }
                 });
             }
-        } catch (e) {
+        } catch {
             showToast("Failed to add social link.");
         }
     };

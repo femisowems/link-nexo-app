@@ -1,7 +1,7 @@
 import { LinkItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check, CopyPlus, Calendar, Clock, LayoutList, Tag } from "lucide-react";
+import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check, CopyPlus, Clock, LayoutList, Tag } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useState, useTransition } from "react";
