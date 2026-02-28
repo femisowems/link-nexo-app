@@ -231,6 +231,8 @@ export default async function AdminPage({
         thumbnailUrl: l.thumbnailUrl || undefined,
         analyticsEventName: l.analyticsEventName || undefined,
         openInNewTab: l.openInNewTab ?? undefined,
+        startDate: l.startDate ? new Date(l.startDate) : null,
+        endDate: l.endDate ? new Date(l.endDate) : null,
     }));
 
     // Transform for UI

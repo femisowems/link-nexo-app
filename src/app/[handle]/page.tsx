@@ -39,9 +39,16 @@ async function getProfile(handle: string) {
     // Note: we fetch links above via relation now!
     const userLinks = profile.links;
 
-    // Filter visible links for public view and transform types
+    const now = new Date();
+
+    // Filter visible links for public view, including schedule bounds, and transform types
     const visibleLinks: LinkItem[] = userLinks
-        .filter((l) => l.visible)
+        .filter((l) => {
+            if (!l.visible) return false;
+            if (l.startDate && new Date(l.startDate) > now) return false;
+            if (l.endDate && new Date(l.endDate) < now) return false;
+            return true;
+        })
         .map(l => ({
             id: l.id,
             profileId: l.profileId,
@@ -63,6 +70,8 @@ async function getProfile(handle: string) {
             thumbnailUrl: l.thumbnailUrl || undefined,
             analyticsEventName: l.analyticsEventName || undefined,
             openInNewTab: l.openInNewTab ?? undefined,
+            startDate: l.startDate ? new Date(l.startDate) : null,
+            endDate: l.endDate ? new Date(l.endDate) : null,
         }));
 
     return {

@@ -22,6 +22,8 @@ export type LinkItem = {
     analyticsEventName?: string;
     openInNewTab?: boolean;
     visible?: boolean;
+    startDate?: Date | null;
+    endDate?: Date | null;
 };
 
 export type CustomDomain = {

@@ -1,7 +1,7 @@
 import { LinkItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check, CopyPlus } from "lucide-react";
+import { ExternalLink, Globe, Sparkles, Link as LinkIcon, AlertCircle, Eye, EyeOff, Trash2, Check, CopyPlus, Calendar, Clock, LayoutList, Tag } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { InlineEdit } from "@/components/ui/InlineEdit";
 import { useState, useTransition } from "react";
@@ -55,6 +55,28 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [isIconModalOpen, setIsIconModalOpen] = useState(false);
+
+    const formatForInput = (d: Date | null | undefined) => {
+        if (!d) return "";
+        const date = new Date(d);
+        // adjust for local timezone to render correctly in datetime-local
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    };
+
+    const [startDate, setStartDate] = useState<string>(formatForInput(link.startDate));
+    const [endDate, setEndDate] = useState<string>(formatForInput(link.endDate));
+    const [isScheduling, setIsScheduling] = useState<boolean>(!!link.startDate || !!link.endDate);
+
+    const handleDateSave = (field: "startDate" | "endDate", value: string, setter: (val: string) => void) => {
+        setter(value);
+        startTransition(async () => {
+            try {
+                await updateLink(link.id, { [field]: value ? new Date(value) : null });
+            } catch (err) {
+                console.error("Failed to save date", err);
+            }
+        });
+    };
 
     const handleSave = (field: string, value: string, setter: (val: string) => void) => {
         if (field === "url") {
@@ -304,6 +326,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
 
                         {/* Variant Selector */}
                         <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                            <LayoutList className="w-3 h-3 text-muted-foreground hidden sm:block" />
                             <span className="text-muted-foreground font-medium">Variant:</span>
                             <select
                                 value={variant}
@@ -352,6 +375,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                         {/* Standard Link Badge Toggle (Shown if NOT primaryOffer) */}
                         {variant !== "primaryOffer" && (
                             <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                                <Tag className="w-3 h-3 text-muted-foreground hidden sm:block" />
                                 <span className="text-muted-foreground font-medium">New Badge:</span>
                                 <div className="flex bg-muted rounded-md p-0.5 border border-border">
                                     <button
@@ -369,7 +393,64 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 </div>
                             </div>
                         )}
+                        {/* Link Scheduling */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0 text-xs bg-muted/30 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none ml-0 sm:ml-2">
+                            <Clock className="w-3 h-3 text-muted-foreground hidden sm:block" />
+                            <span className="text-muted-foreground font-medium">Schedule:</span>
+                            <div className="flex bg-muted rounded-md p-0.5 border border-border">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setIsScheduling(true); }}
+                                    className={cn("px-2.5 py-1 text-xs font-semibold rounded-sm transition-all", isScheduling ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+                                >
+                                    ON
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsScheduling(false);
+                                        if (startDate || endDate) {
+                                            setStartDate("");
+                                            setEndDate("");
+                                            startTransition(async () => {
+                                                try {
+                                                    await updateLink(link.id, { startDate: null, endDate: null });
+                                                } catch (err) {
+                                                    console.error("Failed to clear dates", err);
+                                                }
+                                            });
+                                        }
+                                    }}
+                                    className={cn("px-2.5 py-1 text-xs font-semibold rounded-sm transition-all", !isScheduling ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+                                >
+                                    OFF
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
+                    {/* Scheduled Dates Row */}
+                    {isScheduling && (
+                        <div className="flex flex-wrap gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-300 mt-2">
+                            <div className="flex-[1_1_200px] min-w-[200px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm flex flex-col justify-center">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Start Date & Time</label>
+                                <input
+                                    type="datetime-local"
+                                    value={startDate}
+                                    onChange={(e) => handleDateSave("startDate", e.target.value, setStartDate)}
+                                    className="bg-transparent text-xs text-foreground font-medium border-none focus:ring-0 outline-none p-0 w-full"
+                                />
+                            </div>
+                            <div className="flex-[1_1_200px] min-w-[200px] bg-card rounded-xl p-2.5 border-[1.5px] border-border/40 shadow-sm flex flex-col justify-center">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">End Date & Time</label>
+                                <input
+                                    type="datetime-local"
+                                    value={endDate}
+                                    onChange={(e) => handleDateSave("endDate", e.target.value, setEndDate)}
+                                    className="bg-transparent text-xs text-foreground font-medium border-none focus:ring-0 outline-none p-0 w-full"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Extra Meta fields row */}
                     {variant === "primaryOffer" && (
@@ -424,17 +505,24 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                 </div>
             )}
 
-            {/* Badge */}
-            {link.badge && (
+            {/* Badge or Schedule Status */}
+            {(link.badge || link.startDate || link.endDate) && (
                 <div className="absolute -top-2 -right-2 transform rotate-3 pointer-events-none">
                     <span className={cn(
                         "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm border",
                         link.badge === "NEW" ? "bg-blue-500 text-white border-blue-600" :
                             link.badge === "LIVE" ? "bg-red-500 text-white border-red-600 animate-pulse" :
-                                "bg-amber-400 text-amber-950 border-amber-500" // Featured/Hot
+                                link.badge ? "bg-amber-400 text-amber-950 border-amber-500" :
+                                    (link.startDate && new Date(link.startDate) > new Date()) ? "bg-slate-500 text-white border-slate-600 rotate-0" :
+                                        (link.endDate && new Date(link.endDate) < new Date()) ? "bg-stone-500 text-white border-stone-600 rotate-0" :
+                                            "bg-green-500 text-white border-green-600 rotate-0"
                     )}>
                         {link.badge === "FEATURED" && <Sparkles className="w-3 h-3 inline-block mr-0.5 -mt-0.5" />}
-                        {link.badge}
+                        {link.badge ? link.badge :
+                            (link.startDate && new Date(link.startDate) > new Date()) ? "SCHEDULED" :
+                                (link.endDate && new Date(link.endDate) < new Date()) ? "EXPIRED" :
+                                    "ACTIVE"
+                        }
                     </span>
                 </div>
             )}

@@ -119,6 +119,8 @@ export const links = pgTable("link", {
     openInNewTab: boolean("openInNewTab").default(true),
     visible: boolean("visible").default(true),
     order: integer("order").default(0),
+    startDate: timestamp("startDate", { mode: "date" }),
+    endDate: timestamp("endDate", { mode: "date" }),
 });
 
 export const usersRelations = relations(users, ({ one }) => ({
