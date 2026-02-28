@@ -436,6 +436,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 <input
                                     type="datetime-local"
                                     value={startDate}
+                                    min={formatForInput(new Date())}
                                     onChange={(e) => handleDateSave("startDate", e.target.value, setStartDate)}
                                     className="bg-transparent text-xs text-foreground font-medium border-none focus:ring-0 outline-none p-0 w-full"
                                 />
@@ -445,6 +446,7 @@ export function LinkCard({ link, editable = false, dragHandle, onToggleVisibilit
                                 <input
                                     type="datetime-local"
                                     value={endDate}
+                                    min={formatForInput(new Date())}
                                     onChange={(e) => handleDateSave("endDate", e.target.value, setEndDate)}
                                     className="bg-transparent text-xs text-foreground font-medium border-none focus:ring-0 outline-none p-0 w-full"
                                 />
