@@ -189,11 +189,12 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                 <div className="flex items-center justify-center gap-2 relative group w-full max-w-md">
                     {isEditable ? (
                         <InlineEdit
-                            value={name}
+                            value={name || ""}
                             onSave={(val) => handleSave("name", val, setName)}
-                            className="text-xl sm:text-2xl font-bold text-foreground tracking-tight"
+                            className={cn("text-xl sm:text-2xl font-bold tracking-tight inline-block min-w-[2em]", !name ? "text-muted-foreground/60 italic" : "text-foreground")}
                             inputClassName="text-xl sm:text-2xl font-bold text-center font-sans"
                             label="Name"
+                            placeholder="Add a name..."
                         />
                     ) : (
                         <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{name}</h1>
@@ -214,15 +215,16 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                 <div className="w-full max-w-sm mx-auto">
                     {isEditable ? (
                         <InlineEdit
-                            value={bio}
+                            value={bio || ""}
                             onSave={(val) => handleSave("bio", val, setBio)}
                             multiline
-                            className="text-base text-foreground/80 leading-relaxed block"
+                            className={cn("text-base leading-relaxed block whitespace-pre-wrap min-h-[1.5em]", !bio ? "text-muted-foreground/60 italic" : "text-foreground/80")}
                             inputClassName="text-base text-center leading-relaxed"
                             label="Bio"
+                            placeholder="Add a bio..."
                         />
                     ) : (
-                        <p className="text-base text-foreground/80 leading-relaxed block">{bio}</p>
+                        bio ? <p className="text-base text-foreground/80 leading-relaxed block whitespace-pre-wrap">{bio}</p> : null
                     )}
                 </div>
 

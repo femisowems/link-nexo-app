@@ -13,6 +13,7 @@ interface InlineEditProps {
     label: string; // For accessibility
     disabled?: boolean;
     autoFocus?: boolean;
+    placeholder?: string;
 }
 
 export function InlineEdit({
@@ -24,6 +25,7 @@ export function InlineEdit({
     label,
     disabled = false,
     autoFocus = false,
+    placeholder,
 }: InlineEditProps) {
     const [isEditing, setIsEditing] = useState(autoFocus);
     const [inputValue, setInputValue] = useState(value);
@@ -105,6 +107,7 @@ export function InlineEdit({
                         inputClassName
                     )}
                     aria-label={`Edit ${label}`}
+                    placeholder={placeholder || `Add ${label}...`}
                 />
                 {isSaving && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -145,7 +148,7 @@ export function InlineEdit({
             }}
             aria-label={disabled ? undefined : `Edit ${label}: ${value}`}
         >
-            {value}
+            {value ? value : (placeholder || `Add ${label}...`)}
         </span>
     );
 }
