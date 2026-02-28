@@ -81,7 +81,7 @@ export async function updatePassword(formData: FormData): Promise<{ success?: bo
 // ─── Update Profile (per-profile settings) ────────────────────────────────────
 
 const UpdateProfileInfoSchema = z.object({
-    displayName: z.string().min(1, "Display name cannot be empty.").max(60),
+    displayName: z.string().max(60).optional(),
     bio: z.string().max(200).optional(),
     location: z.string().max(80).optional(),
     avatarUrl: z.string().optional(),
@@ -102,16 +102,19 @@ export async function updateProfileInfo(
     const parsed = UpdateProfileInfoSchema.safeParse(data);
     if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-    // Update the user's display name in the users table
-    await db.update(users).set({ name: parsed.data.displayName }).where(eq(users.id, session.user.id));
-
     // Update per-profile fields
-    await db.update(profiles).set({
+    const updateData: Partial<typeof profiles.$inferInsert> = {
         bio: parsed.data.bio ?? "",
         location: parsed.data.location ?? "",
         avatarUrl: parsed.data.avatarUrl ?? "",
         verified: parsed.data.verified ?? false,
-    }).where(eq(profiles.id, profileId));
+    };
+
+    if (parsed.data.displayName !== undefined) {
+        updateData.name = parsed.data.displayName;
+    }
+
+    await db.update(profiles).set(updateData).where(eq(profiles.id, profileId));
 
     revalidatePath("/admin/profiles");
     revalidatePath(`/admin/profiles/${profileId}/edit`);

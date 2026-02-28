@@ -67,7 +67,7 @@ async function getProfile(handle: string) {
 
     return {
         ...profile,
-        name: profile.user.name || profile.handle, // Map user name
+        name: profile.name, // Use dedicated profile name exactly as it is (can be empty string)
         bio: profile.bio || "",
         location: parseLocation(profile.location),
         avatarUrl: profile.avatarUrl || "",
@@ -138,7 +138,7 @@ export default async function ProfilePage({ params }: Props) {
                 <main className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background/90 to-muted/20">
                     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
                         <ProfileHeader profile={profile} editable={false} />
-                        <SocialRow socials={profile.socials} visible={profile.sectionVisibility?.socials} editable={false} />
+                        <SocialRow socials={profile.socials} profileId={profile.id} profile={profile} visible={profile.sectionVisibility?.socials} editable={false} />
                         <LinkList profileId={profile.id} links={profile.links} visible={profile.sectionVisibility?.links} editable={false} accent={preferences?.accentColor || "blue"} />
                     </div>
                     <div className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">

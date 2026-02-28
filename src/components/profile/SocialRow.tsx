@@ -23,14 +23,17 @@ import {
 import { SortableSocialLink } from "./SortableSocialLink";
 import { useToast } from "@/components/ui/Toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { addSocial, deleteSocial, updateSocial, reorderSocials, updateProfile } from "@/app/actions";
 
 interface SocialRowProps {
     socials: Social[];
+    profileId: string;
+    profile: { sectionVisibility: any };
     visible?: boolean;
     editable?: boolean;
 }
 
-export function SocialRow({ socials: initialSocials, visible = true, editable = false }: SocialRowProps) {
+export function SocialRow({ socials: initialSocials, profileId, profile, visible = true, editable = false }: SocialRowProps) {
     const [socials, setSocials] = useState(initialSocials || []);
     const [isEditable, setIsEditable] = useState(false);
     const [isSectionVisible, setIsSectionVisible] = useState(visible);
@@ -60,13 +63,19 @@ export function SocialRow({ socials: initialSocials, visible = true, editable = 
 
         if (over && active.id !== over.id) {
             const oldSocials = [...socials];
+            let newOrder: Social[] = [];
             setSocials((items) => {
                 const oldIndex = items.findIndex((item) => item.id === active.id);
                 const newIndex = items.findIndex((item) => item.id === over.id);
 
-                return arrayMove(items, oldIndex, newIndex);
+                newOrder = arrayMove(items, oldIndex, newIndex);
+                return newOrder;
             });
 
+            reorderSocials(newOrder.map((s, index) => ({ id: s.id, order: index }))).catch(e => {
+                setSocials(oldSocials);
+                showToast("Failed to reorder socials.");
+            });
             showToast("Socials reordered", {
                 onUndo: () => setSocials(oldSocials)
             });
@@ -79,11 +88,21 @@ export function SocialRow({ socials: initialSocials, visible = true, editable = 
             s.id === id ? { ...s, ...updates } : s
         ));
 
+        // Background update
+        updateSocial(id, updates).catch(e => {
+            setSocials(oldSocials);
+            showToast("Failed to update social.");
+        });
+
         // Show toast only for visible/hidden toggle to avoid spamming on keystrokes
         if ('visible' in updates) {
             const isHidden = updates.visible === false;
             showToast(isHidden ? "Social hidden" : "Social visible", {
-                onUndo: () => setSocials(oldSocials)
+                onUndo: () => {
+                    setSocials(oldSocials);
+                    const originalVisible = oldSocials.find(s => s.id === id)?.visible ?? true;
+                    updateSocial(id, { visible: originalVisible });
+                }
             });
         }
     };
@@ -91,34 +110,62 @@ export function SocialRow({ socials: initialSocials, visible = true, editable = 
     const handleDeleteSocial = (id: string) => {
         const oldSocials = [...socials];
         setSocials(current => current.filter(s => s.id !== id));
+        deleteSocial(id).catch(e => {
+            setSocials(oldSocials);
+            showToast("Failed to delete social.");
+        });
         showToast("Social link removed", {
             onUndo: () => setSocials(oldSocials)
         });
     };
 
-    const handleAddSocial = () => {
+    const handleAddSocial = async () => {
         const oldSocials = [...socials];
-        const newSocial: Social = {
-            id: crypto.randomUUID(),
-            platform: "website",
-            href: "",
-            visible: true,
-            order: socials.length
-        };
 
-        // Insert before the add button (end of list)
-        setSocials(prev => [...prev, newSocial]);
-
-        showToast("Social link added", {
-            onUndo: () => setSocials(oldSocials)
-        });
+        try {
+            const res = await addSocial(profileId);
+            if (res.success && res.social) {
+                // Cast to social, UI expects it
+                const newSocial = res.social as Social;
+                setSocials(prev => [...prev, newSocial]);
+                showToast("Social link added", {
+                    onUndo: () => {
+                        setSocials(oldSocials);
+                        deleteSocial(newSocial.id);
+                    }
+                });
+            }
+        } catch (e) {
+            showToast("Failed to add social link.");
+        }
     };
 
-    const handleToggleSectionVisibility = () => {
-        setIsSectionVisible(!isSectionVisible);
-        showToast(isSectionVisible ? "Socials section hidden" : "Socials section visible", {
-            onUndo: () => setIsSectionVisible(isSectionVisible)
-        });
+    const handleToggleSectionVisibility = async () => {
+        const newVisible = !isSectionVisible;
+        setIsSectionVisible(newVisible);
+
+        const newVisibilityMap = {
+            ...(typeof profile.sectionVisibility === 'object' && profile.sectionVisibility !== null ? profile.sectionVisibility : {}),
+            socials: newVisible
+        };
+        const newVisibilityJson = JSON.stringify(newVisibilityMap);
+
+        try {
+            await updateProfile({ sectionVisibility: newVisibilityJson });
+            showToast(isSectionVisible ? "Socials section hidden" : "Socials section visible", {
+                onUndo: () => {
+                    setIsSectionVisible(isSectionVisible);
+                    const oldVisibilityMap = {
+                        ...(typeof profile.sectionVisibility === 'object' && profile.sectionVisibility !== null ? profile.sectionVisibility : {}),
+                        socials: isSectionVisible
+                    };
+                    updateProfile({ sectionVisibility: JSON.stringify(oldVisibilityMap) });
+                }
+            });
+        } catch {
+            setIsSectionVisible(isSectionVisible);
+            showToast("Failed to save visibility. Please try again.");
+        }
     };
 
     // Filter for public view

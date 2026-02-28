@@ -56,7 +56,7 @@ export type LocationData = {
 };
 
 export type Profile = {
-    name: string;
+    name?: string | null;
     handle: string;
     bio: string;
     avatarUrl: string;

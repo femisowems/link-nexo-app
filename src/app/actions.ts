@@ -176,9 +176,12 @@ export async function createProfile(formData: FormData): Promise<{ success?: boo
     const existing = await db.query.profiles.findFirst({ where: eq(profiles.handle, handle) });
     if (existing) return { error: `@${handle} is already taken.` };
 
+    const user = await db.query.users.findFirst({ where: eq(users.id, session.user.id) });
+
     const [newProfile] = await db.insert(profiles).values({
         userId: session.user.id,
         handle,
+        name: user?.name || null, // initialize with the user's name
         bio: "",
         location: "Everywhere, World",
         avatarUrl: `https://api.dicebear.com/9.x/avataaars/svg?seed=${handle}`,
@@ -255,18 +258,20 @@ export async function updateProfile(formData: { [key: string]: string }) {
     }
 
     // Parse data
-    const { name, bio, location } = formData;
+    const { name, bio, location, sectionVisibility } = formData;
 
     // Update Profile
-    await db.update(profiles)
-        .set({ bio, location })
-        .where(eq(profiles.userId, userId));
+    const updateData: Partial<typeof profiles.$inferInsert> = {};
+    if (bio !== undefined) updateData.bio = bio;
+    if (location !== undefined) updateData.location = location;
+    if (sectionVisibility !== undefined) updateData.sectionVisibility = sectionVisibility;
 
-    // Update User name if provided
-    if (name) {
-        await db.update(users)
-            .set({ name })
-            .where(eq(users.id, userId));
+    if (name !== undefined) updateData.name = name;
+
+    if (Object.keys(updateData).length > 0) {
+        await db.update(profiles)
+            .set(updateData)
+            .where(eq(profiles.userId, userId));
     }
 
     revalidatePath("/admin");
@@ -449,6 +454,95 @@ export async function reorderLinks(items: { id: string; order: number }[]) {
         items.map(item =>
             // We could add "and profileId = ..." to the where clause to be extra safe
             db.update(links).set({ order: item.order }).where(eq(links.id, item.id))
+        )
+    );
+    revalidatePath("/admin");
+    return { success: true };
+}
+
+// --- Social Actions ---
+
+export async function addSocial(profileId: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const userId = session.user.id;
+    const profile = await db.query.profiles.findFirst({
+        where: and(eq(profiles.userId, userId), eq(profiles.id, profileId)),
+    });
+
+    if (!profile) throw new Error("Profile not found");
+
+    const existingSocials = await db.query.socials.findMany({
+        where: eq(socials.profileId, profile.id),
+        orderBy: [asc(socials.order)],
+    });
+    const newOrder = existingSocials.length;
+
+    const newSocial = await db.insert(socials).values({
+        profileId: profile.id,
+        platform: "website",
+        href: "https://example.com",
+        visible: true,
+        order: newOrder,
+    }).returning();
+
+    revalidatePath("/admin");
+    return { success: true, social: newSocial[0] };
+}
+
+export async function updateSocial(id: string, data: Partial<typeof socials.$inferInsert>) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const social = await db.query.socials.findFirst({
+        where: eq(socials.id, id),
+        with: { profile: true }
+    });
+
+    if (!social || social.profile.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    await db.update(socials).set(data).where(eq(socials.id, id));
+    revalidatePath("/admin");
+    return { success: true };
+}
+
+export async function deleteSocial(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const social = await db.query.socials.findFirst({
+        where: eq(socials.id, id),
+        with: { profile: true }
+    });
+
+    if (!social || social.profile.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    await db.delete(socials).where(eq(socials.id, id));
+    revalidatePath("/admin");
+    return { success: true };
+}
+
+export async function reorderSocials(items: { id: string; order: number }[]) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const firstSocial = await db.query.socials.findFirst({
+        where: eq(socials.id, items[0].id),
+        with: { profile: true }
+    });
+
+    if (!firstSocial || firstSocial.profile.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    await Promise.all(
+        items.map(item =>
+            db.update(socials).set({ order: item.order }).where(eq(socials.id, item.id))
         )
     );
     revalidatePath("/admin");

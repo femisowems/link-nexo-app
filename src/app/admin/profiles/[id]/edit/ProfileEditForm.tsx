@@ -79,10 +79,6 @@ export function ProfileEditForm({ profileId, initialData }: ProfileEditFormProps
     const [country, setCountry] = useState(isStructured ? parsedLoc.country : (parsedLoc === "Everywhere, World" ? "WORLD" : ""));
 
     const handleSave = () => {
-        if (!displayName.trim()) {
-            setNameError("Display name cannot be empty.");
-            return;
-        }
         setNameError(undefined);
 
         let finalLocationString = "";

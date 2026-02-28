@@ -236,7 +236,7 @@ export default async function AdminPage({
     // Transform for UI
     const formattedProfile = {
         ...profile,
-        name: profile.user.name || profile.handle,
+        name: profile.name,
         bio: profile.bio || "",
         location: parseLocation(profile.location),
         avatarUrl: profile.avatarUrl || "",
@@ -285,7 +285,7 @@ export default async function AdminPage({
             </div>
 
             <ProfileHeader profile={formattedProfile} editable={true} />
-            <SocialRow socials={formattedProfile.socials} visible={formattedProfile.sectionVisibility?.socials} editable={true} />
+            <SocialRow socials={formattedProfile.socials} profileId={profile.id} profile={formattedProfile} visible={formattedProfile.sectionVisibility?.socials} editable={true} />
             <LinkList links={formattedLinks} profileId={profile.id} visible={true} editable={true} />
         </div>
     );

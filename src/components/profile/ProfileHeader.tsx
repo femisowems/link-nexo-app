@@ -23,54 +23,63 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     // Restore profile state
-    const [name, setName] = useState(profile.name);
-    const [bio, setBio] = useState(profile.bio);
+    const [name, setName] = useState<string | null | undefined>(profile.name);
+    const [bio, setBio] = useState<string | null | undefined>(profile.bio);
 
     // Track Location parts
     const isStructured = typeof profile.location === 'object' && profile.location !== null;
     const initialCity = isStructured ? (profile.location as { city?: string }).city || "" : "";
     const initialCountry = isStructured ? (profile.location as { country?: string }).country || "" : (profile.location === "Everywhere, World" ? "WORLD" : "");
     const initialDisplay = isStructured ? (profile.location as { display?: string }).display || "" : (typeof profile.location === "string" ? profile.location : "");
+    const initialDbLocation = isStructured ? JSON.stringify(profile.location) : (typeof profile.location === "string" ? profile.location : "");
 
     const [city, setCity] = useState<string>(initialCity);
     const [country, setCountry] = useState<string>(initialCountry);
     const [displayLocation, setDisplayLocation] = useState<string>(initialDisplay);
+    const [dbLocation, setDbLocation] = useState<string>(initialDbLocation);
 
     const { showToast } = useToast();
 
     // Save handler - persists to DB via server action
-    const handleSave = async (field: string, value: string, setter: (val: string) => void) => {
-        if (field === "name" && !value.trim()) {
-            showToast("Display name cannot be empty.");
-            return;
-        }
+    const handleSave = async (field: string, displayVal: string, dbVal: string, setter: (val: string) => void) => {
+        // Removed the validation that prevents "name" from being empty to allow 
+        // falling back to handle or showing placeholder, similar to bio.
 
-        const previousValue = field === "name" ? name : field === "bio" ? bio : displayLocation;
-        setter(value); // Optimistic update
+        const previousDisplay = field === "name" ? (name || "") : field === "bio" ? (bio || "") : (displayLocation || "");
+        const previousDbLocation = dbLocation;
+
+        setter(displayVal); // Optimistic update
+        if (field === "location") {
+            setDbLocation(dbVal);
+        }
 
         try {
             await updateProfile({
-                name: field === "name" ? value : name,
-                bio: field === "bio" ? value : bio,
-                location: field === "location" ? value : displayLocation,
+                name: field === "name" ? dbVal : (name || ""),
+                bio: field === "bio" ? dbVal : (bio || ""),
+                location: field === "location" ? dbVal : (dbLocation || ""),
             });
             showToast("Saved", {
                 onUndo: () => {
-                    setter(previousValue);
+                    setter(previousDisplay || "");
                     if (field === "location") {
                         setCity(initialCity);
                         setCountry(initialCountry);
+                        setDbLocation(previousDbLocation);
                     }
                     // Revert in DB
                     updateProfile({
-                        name: field === "name" ? previousValue : name,
-                        bio: field === "bio" ? previousValue : bio,
-                        location: field === "location" ? previousValue : displayLocation,
+                        name: field === "name" ? (previousDisplay || "") : (name || ""),
+                        bio: field === "bio" ? (previousDisplay || "") : (bio || ""),
+                        location: field === "location" ? (previousDbLocation || "") : (dbLocation || ""),
                     });
                 }
             });
         } catch {
-            setter(previousValue); // Revert on error
+            setter(previousDisplay || ""); // Revert on error
+            if (field === "location") {
+                setDbLocation(previousDbLocation);
+            }
             showToast("Failed to save. Please try again.");
         }
     };
@@ -80,22 +89,46 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
         setCountry(newCountry);
 
         let newDisplay = "";
+        let newDb = "";
         if (newCountry === "WORLD") {
             newDisplay = "Everywhere, World";
+            newDb = "Everywhere, World";
         } else if (newCity || newCountry) {
             const countryName = COUNTRIES.find(c => c.code === newCountry)?.name || "";
             newDisplay = [newCity, countryName].filter(Boolean).join(", ");
+            newDb = JSON.stringify({ city: newCity, country: newCountry, display: newDisplay });
         }
 
         // Firing the save handler to run the toast and update mock state
-        handleSave("location", newDisplay, setDisplayLocation);
+        handleSave("location", newDisplay, newDb, setDisplayLocation);
     };
 
-    const handleToggleVisibility = () => {
-        setIsVisible(!isVisible);
-        showToast(isVisible ? "Profile section hidden" : "Profile section visible", {
-            onUndo: () => setIsVisible(isVisible)
-        });
+    const handleToggleVisibility = async () => {
+        const newVisible = !isVisible;
+        setIsVisible(newVisible);
+
+        const newVisibilityMap = {
+            ...(typeof profile.sectionVisibility === 'object' && profile.sectionVisibility !== null ? profile.sectionVisibility : {}),
+            profile: newVisible
+        };
+        const newVisibilityJson = JSON.stringify(newVisibilityMap);
+
+        try {
+            await updateProfile({ sectionVisibility: newVisibilityJson });
+            showToast(isVisible ? "Profile section hidden" : "Profile section visible", {
+                onUndo: () => {
+                    setIsVisible(isVisible);
+                    const oldVisibilityMap = {
+                        ...(typeof profile.sectionVisibility === 'object' && profile.sectionVisibility !== null ? profile.sectionVisibility : {}),
+                        profile: isVisible
+                    };
+                    updateProfile({ sectionVisibility: JSON.stringify(oldVisibilityMap) });
+                }
+            });
+        } catch {
+            setIsVisible(isVisible);
+            showToast("Failed to save visibility. Please try again.");
+        }
     };
 
     // If hidden and not editing, don't render anything
@@ -195,7 +228,7 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                     {isEditable ? (
                         <InlineEdit
                             value={name || ""}
-                            onSave={(val) => handleSave("name", val, setName)}
+                            onSave={(val) => handleSave("name", val, val, setName)}
                             className={cn("text-xl sm:text-2xl font-bold tracking-tight inline-block min-w-[2em]", !name ? "text-muted-foreground/60 italic" : "text-foreground")}
                             inputClassName="text-xl sm:text-2xl font-bold text-center font-sans"
                             label="Name"
@@ -221,7 +254,7 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                     {isEditable ? (
                         <InlineEdit
                             value={bio || ""}
-                            onSave={(val) => handleSave("bio", val, setBio)}
+                            onSave={(val) => handleSave("bio", val, val, setBio)}
                             multiline
                             className={cn("text-base leading-relaxed block whitespace-pre-wrap min-h-[1.5em]", !bio ? "text-muted-foreground/60 italic" : "text-foreground/80")}
                             inputClassName="text-base text-center leading-relaxed"
