@@ -40,6 +40,11 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
 
     // Save handler - persists to DB via server action
     const handleSave = async (field: string, value: string, setter: (val: string) => void) => {
+        if (field === "name" && !value.trim()) {
+            showToast("Display name cannot be empty.");
+            return;
+        }
+
         const previousValue = field === "name" ? name : field === "bio" ? bio : displayLocation;
         setter(value); // Optimistic update
 
@@ -197,7 +202,7 @@ export function ProfileHeader({ profile, editable = false }: ProfileHeaderProps)
                             placeholder="Add a name..."
                         />
                     ) : (
-                        <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{name}</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{name || profile.handle}</h1>
                     )}
 
                     {profile.verified && (
