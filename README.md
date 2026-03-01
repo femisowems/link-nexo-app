@@ -1,182 +1,178 @@
 # Link-Nexo
 
-**Link-Nexo** is a full-stack "Link in Bio" application built with Next.js, React 19, TypeScript, Drizzle ORM, and NeonDB. It gives users a personalized, publicly accessible profile page to showcase their links and social media handles — all managed through a secure, authenticated admin dashboard.
+**A full-stack, conversion-first creator monetization platform.**
 
-![Link-Nexo App Preview](public/app-preview.png)
+Link-Nexo empowers creators to own their digital storefront—showcasing links, selling digital products, capturing leads, and driving conversions through an authenticated, performance-optimized dashboard.
 
----
+*(Demonstrates end-to-end ownership of a monetized creator platform architecture.)*
 
-## 🚀 Features
-
-### **Authentication**
-- **Credentials-based login** with bcrypt password hashing (NextAuth.js v5 + JWT strategy)
-- **Protected routes** via Next.js middleware — `/admin` requires authentication, `/login` redirects authenticated users away
-- **Auto-account creation** on first sign-in for easy onboarding
-
-### **Profile Management**
-- **Custom handle** — each profile has a unique URL handle (e.g. `/yourusername`)
-- **Bio & Location** — editable profile metadata
-- **Avatar** — custom profile image support
-- **Verification Badge** — mark accounts as verified
-- **Section Visibility** — toggle the visibility of profile sections without deleting data
-
-### **Social Links**
-- **Multi-platform support** — GitHub, Twitter/X, LinkedIn, YouTube, Instagram, Email, and generic websites
-- **Drag-and-Drop Sorting** — reorder social icons with a smooth dnd-kit interface
-- **Toggle Visibility** — hide or show individual platforms without deleting them
-
-### **Link Management**
-- **Add / Edit / Delete Links** — full CRUD operations via authenticated server actions
-- **Drag-and-Drop Reordering** — order links with optimistic UI updates
-- **Visibility Toggle** — hide individual links from the public view
-- **Icon Assignment** — associate an icon type with each link
-
-### **Public Profile Pages**
-- **Dynamic routing** via `[handle]` — each user's profile is publicly accessible at `/{handle}`
-- **Read-only view** — public pages render links and socials without any editing controls
-- **Server-rendered** for fast load times and SEO
-
-### **Editor Experience**
-- **Inline WYSIWYG editing** — edit your profile directly on the admin dashboard, no separate forms
-- **Instant feedback** — toast notifications for all save, delete, and reorder actions
-- **Optimistic UI** — interactions feel instant with no loading spinners
+![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
 ---
 
-## 🛠️ Tech Stack
+## Product Overview
 
-| Layer | Technology |
-|---|---|
-| Framework | [Next.js 16](https://nextjs.org/) (App Router) |
-| Language | [TypeScript 5](https://www.typescriptlang.org/) |
-| Runtime | [React 19](https://react.dev/) |
-| Styling | [Tailwind CSS v4](https://tailwindcss.com/) |
-| Animations | [Framer Motion](https://www.framer.com/motion/) |
-| Drag & Drop | [dnd-kit](https://dndkit.com/) |
-| ORM | [Drizzle ORM](https://orm.drizzle.team/) |
-| Database | [Neon Serverless Postgres](https://neon.tech/) |
-| Auth | [NextAuth.js v5](https://authjs.dev/) (Credentials + JWT) |
-| Icons | [Lucide React](https://lucide.dev/) |
-| Validation | [Zod](https://zod.dev/) |
+Creators are outgrowing basic link-in-bio directories. They need proper funnels, data ownership, and instant monetization paths.
+
+Link-Nexo solves this by providing a unified destination where social traffic is captured and converted. Unlike static link lists, this platform is architected around actionable blocks—primary offers, lead capture forms, and dynamic layouts—giving creators deep control over their end-user journey and revenue streams.
 
 ---
 
-## 🗄️ Data Model
+## ✨ Core Features
 
-```
+### Creator Monetization
+- **Primary Offer Card:** Highlight high-ticket items or immediate actions with dedicated styling and positioning.
+- **Digital Product Promotion:** Architected to support direct digital sales flows.
+- **Lead Capture Blocks:** Integrated data collection points to build creator-owned mailing lists.
+
+### Customizable Profile System
+- **Layout Variants:** Seamlessly shift between distinct visual hierarchies optimized for different creator niches.
+- **Dynamic Theming:** Deeply customizable color palettes and visual language.
+- **Section-Based Composition:** Modular drag-and-drop structure handling links, social icons, and heavy content.
+
+### Analytics & Growth
+- **Tracking Architecture:** Built to support granular click and conversion tracking pipelines.
+- **Conversion-Focused Layout:** UI engineered specifically to drive end-user action over passive scrolling.
+
+### Dashboard Experience
+- **Unified Management:** Secure, session-based dashboard (NextAuth.js v5) for controlling all profile assets.
+- **Inline WYSIWYG Editing:** Edit profile metadata, visuals, and links directly on the page—no separate forms.
+- **Live Preview Environment:** Instant asynchronous rendering of changes before hitting the public edge.
+- **Drag-and-Drop Organization:** Reorder links and social icons visually using an optimized dnd-kit interface.
+- **Offer Management:** Granular control over active promotions, including scheduling and visibility toggles.
+
+---
+
+## 🧩 Block / Section System
+
+Link-Nexo leverages a highly modular, component-driven block architecture. This allows the UI to remain highly extensible without bloating the core payload.
+
+- **Primary Offer Block:** A high-visibility component designed to render rich media alongside direct call-to-actions, bypassing standard link lists.
+- **Link List Block:** Optimized arrays of standard URL routing with support for scheduling and visual badges.
+- **Media Block:** Asynchronous loading containers for embedded rich content.
+- **Lead Form Block:** Client-side validated, server-action processed data ingestion forms.
+- **Extensibility Matrix:** New block types can be registered and rendered via the central composition engine without modifying existing data schemas.
+
+---
+
+## 🏗️ Architecture
+
+- **Public/Private Boundary:** Strict separation between the highly cached, edge-optimized public profile rendering paths (`/[handle]`) and the secure, dynamic mutations of the authenticated dashboard (`/admin`).
+- **Rendering Strategy:** Utilizes Next.js App Router for a hybrid approach—Server Components (RSC) handle heavy data fetching and layout structure, while Client Components are isolated to interactive islands (like DnD ordering and live previews).
+- **Data Flow:** Type-safe end-to-end data pipeline moving from generic relational database schemas through strongly typed ORM layers (Drizzle ORM), validated by Zod at the boundary, and executed via Next.js Server Actions to minimize client payload.
+- **Database Architecture:** Runs on Neon Serverless Postgres, designed for quick connection ramping and high availability under traffic spikes from viral social media posts.
+
+### 🗄️ Relational Data Model
+
+The application uses an optimized relational schema ensuring atomic updates:
+
+```text
 users ──────< accounts
   │
   └──────── profiles ──────< links
                      └──────< socials
 ```
 
-| Table | Key Fields |
-|---|---|
-| `user` | `id`, `name`, `email`, `password`, `image` |
-| `account` | `userId`, `provider`, `providerAccountId` (OAuth support) |
-| `session` | `sessionToken`, `userId`, `expires` |
-| `profile` | `id`, `userId`, `handle` (unique), `bio`, `location`, `avatarUrl`, `verified`, `sectionVisibility` |
-| `link` | `id`, `profileId`, `title`, `href`, `icon`, `visible`, `order` |
-| `social` | `id`, `profileId`, `platform`, `href`, `label`, `visible`, `order` |
+- **`user` & `account`**: Powered by NextAuth for session and OAuth strategy management.
+- **`profile`**: Central hub storing `handle`, `bio`, `theme`, and `sectionVisibility` states.
+- **`link` & `social`**: Actionable blocks linked to a profile, containing `order` indices for DnD sorting and scheduling metadata.
 
----
+### 📁 Project Structure Highlights
 
-## 📁 Project Structure
-
-```
+```text
 src/
 ├── app/
-│   ├── [handle]/        # Public profile pages (dynamic route)
-│   ├── admin/           # Authenticated admin dashboard
-│   ├── login/           # Login page
-│   ├── settings/        # User settings
+│   ├── [handle]/        # Public profile pages (dynamic route, heavily cached)
+│   ├── admin/           # Authenticated admin dashboard & WYSIWYG editor
 │   ├── api/             # API route handlers (NextAuth)
-│   └── actions.ts       # Server Actions (profile, link CRUD)
-├── auth.ts              # NextAuth configuration
-├── middleware.ts         # Route protection middleware
+│   └── actions.ts       # Centralized Server Actions for CRUD operations
 ├── db/
-│   ├── schema.ts        # Drizzle schema definitions
-│   └── index.ts         # Neon DB connection
-├── components/          # Shared UI components
-├── types/               # TypeScript type definitions
-└── lib/                 # Utility helpers
+│   ├── schema.ts        # Drizzle ORM schema definitions
+│   └── index.ts         # Neon DB serverless edge-connection pool
+├── components/          # Reusable UI Blocks (PrimaryOffer, LinkCard, etc.)
+└── types/               # TypeScript interfaces shared effectively across boundaries
 ```
 
 ---
 
-## 🏃‍♂️ Getting Started
+## 🎨 UX & Design Philosophy
 
-### Prerequisites
+- **Conversion-First Layout:** Every pixel serves to guide the user towards the creator's primary goal, leveraging Stan.store-inspired monetization principles.
+- **Mobile-First Design:** Since 90%+ of traffic originates from social platforms (Instagram, TikTok), the UI is engineered exclusively around the mobile viewport experience first, scaling gracefully to desktop.
+- **Frictionless Creator Funnel:** The dashboard experience removes technical overhead, allowing creators to update offers and links in seconds without breaking layout constraints. Micro-interactions and drag-and-drop state changes are smoothed over using Framer Motion.
 
-- **Node.js** 18+
-- A [Neon](https://neon.tech/) Postgres database (free tier works)
+---
 
-### 1. Clone the repository
+## ⚙️ Getting Started
 
 ```bash
-git clone https://github.com/yourusername/link-nexo-app.git
+# 1. Clone the repository
+git clone <repo-url>
 cd link-nexo-app
-```
 
-### 2. Install dependencies
-
-```bash
+# 2. Install dependencies
 npm install
+
+# 3. Setup Environment Variables
+cp .env.example .env.local
 ```
 
-### 3. Configure environment variables
-
-Create a `.env.local` file in the root of the project:
-
-```bash
+Populate `.env.local` with your database and auth credentials:
+```env
 # Database (Neon Postgres)
 DATABASE_URL="postgresql://..."
 
 # Auth
-AUTH_SECRET="your-secret-here"   # generate with: openssl rand -base64 32
+AUTH_SECRET="your-secret-here" # generate with: openssl rand -base64 32
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-### 4. Push the database schema
-
 ```bash
+# 4. Push the database schema
 npx drizzle-kit push
-```
 
-### 5. (Optional) Seed the database
-
-```bash
+# 5. (Optional) Seed the database
 npx tsx scripts/seed.ts
-```
 
-### 6. Run the development server
-
-```bash
+# 6. Run the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Build for production:
+```bash
+npm run build
+npm run start
+```
 
 ---
 
-## 📜 Available Scripts
+## 🧪 Future Roadmap
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start the development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start the production server |
-| `npm run lint` | Run ESLint |
-| `npx drizzle-kit push` | Push schema changes to the database |
-| `npx drizzle-kit studio` | Open Drizzle Studio (DB GUI) |
-| `npx tsx scripts/seed.ts` | Seed the database with sample data |
+- **Payments Integration:** Native Stripe Connect flows for instant, in-profile digital product checkout.
+- **Automated Email Sequences:** Deep integration with email providers (Resend/Sendgrid) triggered via the Lead Form block.
+- **Comprehensive Analytics Dashboard:** Real-time visualization of traffic sources, CTRs, and revenue.
+- **A/B Testing Engine:** Automated multivariate testing for Primary Offers to optimize creator CTR.
+- **Theme Marketplace:** An ecosystem allowing customized, premium themes to be applied per-profile.
 
 ---
 
-## 🤝 Contributing
+## 📸 Previews
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Dashboard & Public Profile
+![App Preview](/public/app-preview.png)
 
-## 📄 License
+---
 
-This project is open source and available under the [MIT License](LICENSE).
+## 👤 Author
+
+**Femi Sowemimo** — Senior Frontend / AI Product Engineer  
+*Brand:* StarterDev  
+*Portfolio:* [ssowemimo.com](https://ssowemimo.com)  
+
+**Focus Areas:**
+- AI-Powered SaaS Applications
+- Monetization Systems & Creator Economy
+- UX-Driven Frontend Architecture
